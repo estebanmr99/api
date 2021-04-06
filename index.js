@@ -1,8 +1,8 @@
-import 'dotenv/config';
+import 'dotenv/config.js';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import express from 'express';
-import routes from './src/routes/apiRoute';
+import routes from './src/routes/apiRoute.js';
 
 const app = express();
 

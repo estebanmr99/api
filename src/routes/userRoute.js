@@ -1,7 +1,6 @@
 import { Router } from 'express';
-import { login, register, loginRequired } from '../controllers/userControllers';
-
-const pg = require("pg");
+import { login, register, loginRequired } from '../controllers/userControllers.js';
+import pg from 'pg';
 
 const config = {
   user: process.env.DATABASE_USER,
@@ -20,3 +19,5 @@ router.post('/auth/register', register);
 
 // login route
 router.post('/login', login);
+
+export default router;

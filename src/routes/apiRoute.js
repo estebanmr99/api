@@ -1,6 +1,6 @@
-import routes from './routes';
+import routes from './index.js';
 
-const routes = (app) => {
+const route = (app) => {
     app.use('/user', routes.user);
 
     app.get('/', (req, res) => {
@@ -20,4 +20,4 @@ const routes = (app) => {
     });
 }
 
-export default routes;
+export default route;
