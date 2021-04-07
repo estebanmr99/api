@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { login, register, loginRequired } from '../controllers/userControllers.js';
+import { login, register, loginRequired } from '../Controllers/userControllers.js';
 import pg from 'pg';
 
 const config = {
