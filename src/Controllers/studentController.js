@@ -13,11 +13,5 @@ const config = {
 
 var pool = new pg.Pool(config);
 
-export const loginRequired = (req, res, next) => {
-}
-
-export const register = (req, res) => {
-}
-
-export const login = (req,res) => {
+export const main = (req, res, next) => {
 }

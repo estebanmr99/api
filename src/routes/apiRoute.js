@@ -3,6 +3,8 @@ import routes from './index.js';
 const route = (app) => {
     app.use('/user', routes.user);
 
+    app.use('/student', routes.student);
+
     app.get('/', (req, res) => {
         return res.send('Received a GET HTTP method');
     });
