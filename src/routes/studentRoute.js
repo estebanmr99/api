@@ -1,27 +1,38 @@
 import { Router } from 'express';
-import { main } from '../Controllers/studentController.js';
+import { addStudent,
+         deleteStudent,
+         updateStudent,
+         getStudentsInfo,
+         getStudentProfile,
+         addStudentToGroup,
+         removeStudentfromGroup,
+         addStudentImported} from '../controllers/studentController.js';
+import { loginRequired } from '../controllers/userController.js';
 
 const router = Router();
 
 // Add student
-router.post('/add', main);
+router.post('/add', addStudent);
 
 // Delete student
-router.delete('/:studentID', main);
+router.delete('/:uniqueStudentID', loginRequired, deleteStudent);
 
 // Update student information
-router.put('/:studentID', main);
+router.put('/:uniqueStudentID', loginRequired, updateStudent);
 
 // Get all the students
-router.get('/getall', main);
+router.get('/getall', loginRequired, getStudentsInfo);
 
 // Get profile information from student
-router.get('/profile/:studentID', main);
+router.get('/profile/:uniqueStudentID', loginRequired, getStudentProfile);
 
 // Add a single or multiple students to a group
-router.put('/addtogroup', main);
+router.put('/addtogroup', loginRequired, addStudentToGroup);
 
 // Delete a single or multiple students from a group
-router.delete('/removefromgroup', main);
+router.delete('/removefromgroup', loginRequired, removeStudentfromGroup);
+
+// Add a single or multiple students
+router.post('/importstudent', loginRequired, addStudentImported);
 
 export default router;
