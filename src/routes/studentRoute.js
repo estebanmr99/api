@@ -15,16 +15,16 @@ const router = Router();
 router.post('/add', addStudent);
 
 // Delete student
-router.delete('/:uniqueStudentID', loginRequired, deleteStudent);
+router.delete('/delete', loginRequired, deleteStudent);
 
 // Update student information
 router.put('/:uniqueStudentID', loginRequired, updateStudent);
 
 // Get all the students
-router.get('/getall', loginRequired, getStudentsInfo);
+router.get('/getall', getStudentsInfo);
 
 // Get profile information from student
-router.get('/profile/:uniqueStudentID', loginRequired, getStudentProfile);
+router.get('/profile/:uniqueStudentID', getStudentProfile);
 
 // Add a single or multiple students to a group
 router.put('/addtogroup', loginRequired, addStudentToGroup);
