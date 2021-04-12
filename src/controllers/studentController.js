@@ -1,4 +1,6 @@
 import pg from 'pg';
+import Parse from 'csv-parse';
+import fs from 'fs-extra';
 
 const config = {
   user: process.env.DATABASE_USER,
@@ -58,7 +60,7 @@ export const updateStudent = (req, res) => {
       console.log("Not able to stablish connection: "+ err);
       res.status(400).send(err);
     } 
-    client.query('SELECT * from prc_update_student($1, $2, $3, $4)',[req.params.uniqueStudentID, req.body.studentID, req.body.studentName, req.body.judges] ,function(err,result) {
+    client.query('SELECT * from prc_update_student($1, $2, $3, $4)',[req.params.uniqueStudentID, req.body.studentID, req.body.studentName, req.body.judges], function(err,result) {
       done(); 
       if(err){
         console.log(err);
@@ -129,7 +131,7 @@ export const addStudentToGroup = (req, res) => {
       console.log("Not able to stablish connection: "+ err);
       res.status(400).send(err);
     } 
-    client.query('SELECT * from prc_add_student_group($1, $2)',[req.body.students, req.body.groups] ,function(err,result) {
+    client.query('SELECT * from prc_add_student_group($1, $2)',[req.body.students, req.body.groups], function(err,result) {
       done(); 
       if(err){
         console.log(err);
@@ -147,7 +149,7 @@ export const removeStudentfromGroup = (req, res) => {
       console.log("Not able to stablish connection: "+ err);
       res.status(400).send(err);
     } 
-    client.query('SELECT * from prc_delete_student_group($1, $2)',[req.body.students, req.body.groups] ,function(err,result) {
+    client.query('SELECT * from prc_delete_student_group($1, $2)',[req.body.students, req.body.groups], function(err,result) {
       done(); 
       if(err){
         console.log(err);
@@ -158,24 +160,66 @@ export const removeStudentfromGroup = (req, res) => {
   });
 }
 
-// -----------------------------------------------------FALTA
+// Deberia funcionar
 export const addStudentImported = (req, res) => {
-  pool.connect(function(err,client,done) {
-    if(err){
-      console.log("Not able to stablish connection: "+ err);
-      res.status(400).send(err);
-    } 
-    client.query('SELECT * from prc_seleccionar_usuario($1)',[req.params.userId] ,function(err,result) {
-      done(); 
+  var filePath = req.file.path;
+
+  function onNewRecord(record){
+    pool.connect(function(err,client,done) {
       if(err){
-        console.log(err);
+        console.log("Not able to stablish connection: "+ err);
         res.status(400).send(err);
-      }
-      var user;
-      for(var i = 0; i< result.rows.length; i++){
-        user = result.rows[i];
-      }
-      res.status(200).send(user);
+      } 
+      client.query('SELECT * from prc_add_student($1, $2, $3, $4)', [record.id, record.nombre, record.apellido, record.jueces], function(err, result) {
+        done(); 
+        if(err){
+          console.log(err);
+          //res.status(400).send(err);
+        }
+        console.log("Student" + record.id + "created successfully");
+      });
     });
+    console.log(record)
+  }
+
+  function onError(error){
+    console.log(error)
+  }
+
+  function done(linesRead){
+    fs.remove('uploads');
+    //fs.emptyDir("uploads");
+    res.status(200).send();
+  }
+
+  var columns = true; 
+  parseCSVFile(filePath, columns, onNewRecord, onError, done);
+}
+
+function parseCSVFile(sourceFilePath, columns, onNewRecord, handleError, done){
+  var source = fs.createReadStream(sourceFilePath);
+  var linesRead = 0;
+
+  var parser = Parse({
+    delimiter: ',', 
+    columns:columns
   });
+
+  parser.on("readable", function(){
+    var record;
+    while (record = parser.read()) {
+        linesRead++;
+        onNewRecord(record);
+    }
+  });
+
+  parser.on("error", function(error){
+    handleError(error)
+  });
+
+  parser.on("end", function(){
+    done(linesRead);
+  });
+
+  source.pipe(parser);
 }

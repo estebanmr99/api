@@ -8,7 +8,9 @@ import { addStudent,
          removeStudentfromGroup,
          addStudentImported} from '../controllers/studentController.js';
 import { loginRequired } from '../controllers/userController.js';
+import multer from 'multer';
 
+var upload = multer({ dest: 'uploads/' });
 const router = Router();
 
 // Add student
@@ -33,6 +35,6 @@ router.put('/addtogroup', loginRequired, addStudentToGroup);
 router.delete('/removefromgroup', loginRequired, removeStudentfromGroup);
 
 // Add a single or multiple students
-router.post('/importstudent', loginRequired, addStudentImported);
+router.post('/importstudent', upload.single("file"), addStudentImported);
 
 export default router;
