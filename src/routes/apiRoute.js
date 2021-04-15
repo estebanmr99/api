@@ -5,6 +5,10 @@ const route = (app) => {
 
     app.use('/student', routes.student);
 
+    app.use('/group', routes.group);
+
+    //falta la ruta de tag
+
     app.get('/', (req, res) => {
         return res.send('Received a GET HTTP method');
     });

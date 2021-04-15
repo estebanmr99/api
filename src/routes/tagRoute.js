@@ -14,9 +14,11 @@ router.post('/add', addTag);
 router.delete('/delete', loginRequired, deleteTag);
 
 // Update student information
-router.put('/:uniqueTagID', loginRequired, updateTag);
+router.put('/update/:uniqueTagID', loginRequired, updateTag);
 
 // Get all the tags
 router.get('/getall', getTagsInfo);
+
+//falta la ruta para obtener los tags en los filtros
 
 export default router;

@@ -20,7 +20,7 @@ router.post('/add', addStudent);
 router.delete('/delete', loginRequired, deleteStudent);
 
 // Update student information
-router.put('/:uniqueStudentID', loginRequired, updateStudent);
+router.put('/update/:uniqueStudentID', loginRequired, updateStudent);
 
 // Get all the students
 router.get('/getall', getStudentsInfo);
