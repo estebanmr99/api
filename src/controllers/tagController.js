@@ -82,3 +82,21 @@ export const getTagsInfo = (req, res) => {
     });
   });
 }
+
+//falta SP, hacerlo cuando Joss pase los de ella
+export const getTagsNames = (req, res) => {
+  pool.connect(function(err,client,done) {
+    if(err){
+      console.log("Not able to stablish connection: "+ err);
+      res.status(400).send(err);
+    } 
+    client.query('SELECT * from prc_get_tags_names()', function(err, result) {
+      done(); 
+      if(err){
+        console.log(err);
+        res.status(400).send(err);
+      }
+      res.status(200).send(result.rows);
+    });
+  });
+}
