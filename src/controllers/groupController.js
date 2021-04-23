@@ -110,8 +110,8 @@ export const getGroupsInfo = (req, res) => {
       res.status(400).send(err);
     }
     try {
-        // const groupsInfoResult = await client.query('SELECT * from prc_get_groups($1)',[req.body.tags])
-        // const groupsStudentsResult = await client.query('SELECT * from prc_get_groups_students($1)',[req.body.tags])
+        // const groupsInfoResult = await client.query('SELECT * from prc_get_groups($1)',[req.body.tags]);
+        // const groupsStudentsResult = await client.query('SELECT * from prc_get_groups_students($1)',[req.body.tags]);
 
         // var groupsInfo = groupsInfoResult.rows;
         // var groupsStudents = groupsStudentsResult.rows;

@@ -9,6 +9,8 @@ const route = (app) => {
 
     app.use('/tag', routes.tag);
 
+    app.use('/problem', routes.tag);
+
     app.get('/', (req, res) => {
         return res.send('Received a GET HTTP method');
     });
