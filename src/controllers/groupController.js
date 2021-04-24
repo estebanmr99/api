@@ -104,13 +104,13 @@ export const getGroupsInfo = (req, res) => {
                                 "groupID": "3b57e049-a065-4f5b-a20a-43ab92c05fc5", "id" : "3b57e044", "name": "student1", "judge1" : "user", "judge2" : "use2", "judge3" : "user3"
                             }]
 
-  pool.connect(function(err,client,done) {
+  pool.connect(async function(err,client,done) {
     if(err){
       console.log("Not able to stablish connection: "+ err);
       res.status(400).send(err);
     }
     try {
-        // const groupsInfoResult = await client.query('SELECT * from prc_get_groups($1)',[req.body.tags]);
+        //const groupsInfoResult = await client.query('SELECT * from prc_get_groups($1)',[req.body.tags]);
         // const groupsStudentsResult = await client.query('SELECT * from prc_get_groups_students($1)',[req.body.tags]);
 
         // var groupsInfo = groupsInfoResult.rows;

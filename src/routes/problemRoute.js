@@ -4,7 +4,7 @@ import { updateProblem,
          removeTagfromProblem,
          addTagToProblem,
          getJudgesAccessTokens,
-         syncProblems} from '../controllers/ProblemController.js';
+         syncProblems} from '../controllers/problemController.js';
 import { loginRequired } from '../controllers/userController.js';
 
 const router = Router();
