@@ -104,8 +104,15 @@ export const syncProblems = async (req, res) => {
     // var studentsJudgeCodeChef;
     // var studentsJudgeUVA;
 
-    var studentsJudgeCodeChef;
-    var studentsJudgeUVA;
+    var studentsJudgeCodeChef = [{ 
+                                    "studentId" : "3b57e049", "studentUsername": "joss15"
+                                }, 
+                                {
+                                    "studentId" : "3b57e048", "studentUsername": "estebanmrj99"
+                                }]
+    var studentsJudgeUVA = [{ 
+                                "studentId" : "3b57e049", "studentUserId": "11331"
+                            }]
     var studentsJudgeCodeForces = [{ 
                                   "studentId" : "3b57e049", "studentUsername": "nostarck"
                               }, 
@@ -171,7 +178,7 @@ async function codeForcesAPICall(userID, studentsJudgeCodeForces) {
       //   if(err){
       //     console.log("Not able to stablish connection: "+ err);
       //   } else {
-      //     client.query('SELECT * from prc_update_student_problems($1, $2, $3)',[userID, studentsJudgeCodeForces[i]["studentId"], studentsJudgeCodeForces[i]["studentUsername"], "CodeForces", problems], function(err,result) {
+      //     client.query('SELECT * from prc_update_student_problems($1, $2, $3, $4)',[userID, studentsJudgeCodeForces[i]["studentId"], studentsJudgeCodeForces[i]["studentUsername"], "CodeForces", problems], function(err,result) {
       //       done(); 
       //       if(err)
       //         console.log(err);
@@ -204,20 +211,112 @@ async function codeForcesAPICall(userID, studentsJudgeCodeForces) {
 
 async function codeChefAPICall(userID, studentsJudgeCodeChef) {
     try {
-        const data = JSON.stringify({"grant_type":"client_credentials","scope":"public","client_id":"ce8dd1716ceb5641237ddb77eaf35615","client_secret":"6a3f2deeca7d06b9f621effe163b5811","redirect_uri":"http://localhost:8000/"});
+        var data = JSON.stringify({"grant_type":"client_credentials","scope":"public","client_id":"ce8dd1716ceb5641237ddb77eaf35615","client_secret":"6a3f2deeca7d06b9f621effe163b5811","redirect_uri":"http://localhost:8000/"});
+
         const url = 'https://api.codechef.com/oauth/token';
         const headers = {
             headers: { "content-type": "application/json" },
         };
     
-        const response = await axios.post(url, data, headers);
-        console.log(response.data["result"]);
+        const response = await axios.post(url,data, headers);
+        const token = response.data["result"]["data"]["access_token"];
+
+        for (let i = 0; i < studentsJudgeCodeChef.length; i++) {
+            const url = 'https://api.codechef.com/users/' + studentsJudgeCodeChef[i]["studentUsername"];
+            const options = {
+                params: { fields: "problemStats" },
+                headers: {  
+                            "Accep": "application/json", 
+                            "Authorization": "Bearer " + token
+                         },
+            };
+            
+            try {
+                const response = await axios.get(url, options);
+                var studentProblems = response.data["result"]["data"]["content"]["problemStats"]["solved"];
+                var problems = "";
+    
+                for (var key in studentProblems) {
+                    problems += studentProblems[key].join(";");
+                    if (problems != "")
+                        problems += ";";
+                }
         
+              // pool.connect(function(err,client,done) {
+              //   if(err){
+              //     console.log("Not able to stablish connection: "+ err);
+              //   } else {
+              //     client.query('SELECT * from prc_update_student_problems($1, $2, $3, $4)',[userID, studentsJudgeCodeChef[i]["studentId"], studentsJudgeCodeChef[i]["studentUsername"], "CodeChef", problems], function(err,result) {
+              //       done(); 
+              //       if(err)
+              //         console.log(err);
+              //     });
+              //   }
+              // });
+              console.log(i);
+            } catch (err){
+              pool.connect(function(err,client,done) {
+                if(err){
+                  console.log("Not able to stablish connection: "+ err);
+                } else {
+                  client.query('SELECT * from prc_add_student_log($1, $2, $3)',[userID, studentsJudgeCodeChef[i]["studentUsername"], "CodeChef"], function(err,result) {
+                    done(); 
+                    if(err)
+                      console.log(err);
+                  });
+                }
+              });
+            }
+            
+            var count = i + 1;
+            if (count > 1 && count % 30 == 0 ){
+              console.log("delay");
+              await sleep(300000);
+            }
+              
+        }
     } catch (err) {
-        console.log(err);
+        console.log("Couldn't get user token for CodeChef");
     }
+
 }
 
 async function uvaAPICall(userID, studentsJudgeUVA) {
-  console.log('calling');
+    for (let i = 0; i < studentsJudgeUVA.length; i++) {
+        const url = 'https://uhunt.onlinejudge.org/api/subs-user/' + studentsJudgeUVA[i]["studentUserId"];
+    
+        try {
+          const response = await axios.get(url);
+          var studentProblems = response.data["subs"].filter(item => item[2] == 90);
+          var problems = "";
+          for (let j = 0; j < studentProblems.length; j++) {
+            problems += studentProblems[j][1] + ";";
+          }
+    
+          // pool.connect(function(err,client,done) {
+          //   if(err){
+          //     console.log("Not able to stablish connection: "+ err);
+          //   } else {
+          //     client.query('SELECT * from prc_update_student_problems($1, $2, $3, $4)',[userID, studentsJudgeUVA[i]["studentId"], response.data["uname"], "UVA", problems], function(err,result) {
+          //       done(); 
+          //       if(err)
+          //         console.log(err);
+          //     });
+          //   }
+          // });
+          console.log(i);
+        } catch (err){
+          pool.connect(function(err,client,done) {
+            if(err){
+              console.log("Not able to stablish connection: "+ err);
+            } else {
+              client.query('SELECT * from prc_add_student_log($1, $2, $3)',[userID, response.data["uname"], "UVA"], function(err,result) {
+                done(); 
+                if(err)
+                  console.log(err);
+              });
+            }
+          });
+        }          
+    }
 }
