@@ -1,6 +1,7 @@
 import pg from 'pg';
 import Parse from 'csv-parse';
 import fs from 'fs-extra';
+import axios from 'axios';
 
 const config = {
   user: process.env.DATABASE_USER,
@@ -14,13 +15,26 @@ const config = {
 var pool = new pg.Pool(config);
 
 // si funciona
-export const addStudent = (req, res) => {
+export const addStudent = async (req, res) => {
+
+  var studentUsernames = req.body.judges.split(";");
+  var studentJudgeIds = "";
+  for (let i = 0; i < studentUsernames.length; i++) {
+    if (i == 2){
+      const url = 'https://uhunt.onlinejudge.org/api/uname2uid/' + studentUsernames[i];
+      const response = await axios.get(url);
+      studentJudgeIds += response.data;
+    }
+    studentJudgeIds += ";";
+  }
+  studentJudgeIds = studentJudgeIds.slice(0,-1);
+  
   pool.connect(function(err,client,done) {
     if(err){
       console.log("Not able to stablish connection: "+ err);
       res.status(400).send(err);
     } 
-    client.query('SELECT * from prc_add_student($1, $2, $3, $4)', [req.body.studentID, req.body.studentName, req.body.studentLastName, req.body.judges], function(err, result) {
+    client.query('SELECT * from prc_add_student($1, $2, $3, $4, $5)', [req.body.studentID, req.body.studentName, req.body.studentLastName, req.body.judges, studentJudgeIds], function(err, result) {
       done(); 
       if(err){
         console.log(err);
@@ -161,16 +175,28 @@ export const removeStudentfromGroup = (req, res) => {
 }
 
 // Deberia funcionar
-export const addStudentImported = (req, res) => {
+export const addStudentImported = async (req, res) => {
   var filePath = req.file.path;
 
-  function onNewRecord(record){
+  async function onNewRecord(record){
+    var studentUsernames = record.jueces.split(";");
+    var studentJudgeIds = "";
+    for (let i = 0; i < studentUsernames.length; i++) {
+      if (i == 2){
+        const url = 'https://uhunt.onlinejudge.org/api/uname2uid/' + studentUsernames[i];
+        const response = await axios.get(url);
+        studentJudgeIds += response.data;
+      }
+      studentJudgeIds += ";";
+    }
+    studentJudgeIds = studentJudgeIds.slice(0,-1);  
+
     pool.connect(function(err,client,done) {
       if(err){
         console.log("Not able to stablish connection: "+ err);
         res.status(400).send(err);
       } 
-      client.query('SELECT * from prc_add_student($1, $2, $3, $4)', [record.id, record.nombre, record.apellido, record.jueces], function(err, result) {
+      client.query('SELECT * from prc_add_student($1, $2, $3, $4, $5)', [record.id, record.nombre, record.apellido, record.jueces, studentJudgeIds], function(err, result) {
         done(); 
         if(err){
           console.log(err);
@@ -187,8 +213,8 @@ export const addStudentImported = (req, res) => {
   }
 
   function done(linesRead){
-    fs.remove('uploads');
-    //fs.emptyDir("uploads");
+    //fs.remove('uploads');
+    fs.emptyDir("uploads");
     res.status(200).send();
   }
 

@@ -118,18 +118,6 @@ export const syncProblems = async (req, res) => {
                               }, 
                               {
                                   "studentId" : "3b57e048", "studentUsername": "Fefer_Ivan"
-                              },
-                              {
-                                  "studentId" : "3b57e047", "studentUsername": "Fefer_Ivan"
-                              }, 
-                              {
-                                  "studentId" : "3b57e046", "studentUsername": "Fefer_Ivan"
-                              },
-                              {
-                                  "studentId" : "3b57e045", "studentUsername": "Fefer_Ivan"
-                              }, 
-                              {
-                                  "studentId" : "3b57e044", "studentUsername": "Fefer_Ivan"
                               }]
 
     // pool.connect(async function(err,client,done) {
@@ -173,6 +161,7 @@ async function codeForcesAPICall(userID, studentsJudgeCodeForces) {
       for (let j = 0; j < studentProblems.length; j++) {
         problems += studentProblems[j]["problem"]["contestId"] + studentProblems[j]["problem"]["index"] + ";";
       }
+      problems = problems.slice(0,-1);
 
       // pool.connect(function(err,client,done) {
       //   if(err){
@@ -241,6 +230,7 @@ async function codeChefAPICall(userID, studentsJudgeCodeChef) {
                     if (problems != "")
                         problems += ";";
                 }
+                problems = problems.slice(0,-1);
         
               // pool.connect(function(err,client,done) {
               //   if(err){
