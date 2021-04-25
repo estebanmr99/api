@@ -39,7 +39,7 @@ export const getProblemsInfo = (req, res) => {
       console.log("Not able to stablish connection: "+ err);
       res.status(400).send(err);
     } 
-    client.query('SELECT * from prc_get_problems($1, $2, $3)', [userID, req.body.judges, req.body.tags], function(err, result) {
+    client.query('SELECT * from prc_get_problems($1, $2, $3)', [userID, req.body.judgesIDs, req.body.tagsID], function(err, result) {
       done(); 
       if(err){
         console.log(err);
@@ -58,7 +58,7 @@ export const addTagToProblem = (req, res) => {
       console.log("Not able to stablish connection: "+ err);
       res.status(400).send(err);
     } 
-    client.query('SELECT * from prc_add_tags_to_problems($1, $2, $3)',[userID, req.body.tags, req.body.problems], function(err,result) {
+    client.query('SELECT * from prc_add_tags_to_problems($1, $2, $3)',[userID, req.body.tagsIDs, req.body.problemsIDs], function(err,result) {
       done(); 
       if(err){
         console.log(err);
@@ -77,7 +77,7 @@ export const removeTagfromProblem = (req, res) => {
       console.log("Not able to stablish connection: "+ err);
       res.status(400).send(err);
     } 
-    client.query('SELECT * from prc_delete_tags_from_problems($1, $2, $3)',[userID, req.body.tags, req.body.problems], function(err,result) {
+    client.query('SELECT * from prc_delete_tags_from_problems($1, $2, $3)',[userID, req.body.tagsIDs, req.body.problemsIDs], function(err,result) {
         done(); 
       if(err){
         console.log(err);
@@ -166,7 +166,8 @@ async function codeForcesAPICall(userID, studentsJudgeCodeForces) {
       //   if(err){
       //     console.log("Not able to stablish connection: "+ err);
       //   } else {
-      //     client.query('SELECT * from prc_update_student_problems($1, $2, $3, $4)',[userID, studentsJudgeCodeForces[i]["studentId"], studentsJudgeCodeForces[i]["studentUsername"], "CodeForces", problems], function(err,result) {
+      // -- esto es para sincronizar los problemas resueltos por un estudiante, si el problema ya existen la DB solo se asocia que el estudiante lo resolvio
+      //     client.query('SELECT * from prc_update_student_problems($1, $2, $3, $4)',[userID, studentsJudgeCodeForces[i]["studentId"], "CodeForces", problems], function(err,result) {
       //       done(); 
       //       if(err)
       //         console.log(err);
@@ -235,7 +236,7 @@ async function codeChefAPICall(userID, studentsJudgeCodeChef) {
               //   if(err){
               //     console.log("Not able to stablish connection: "+ err);
               //   } else {
-              //     client.query('SELECT * from prc_update_student_problems($1, $2, $3, $4)',[userID, studentsJudgeCodeChef[i]["studentId"], studentsJudgeCodeChef[i]["studentUsername"], "CodeChef", problems], function(err,result) {
+              //     client.query('SELECT * from prc_update_student_problems($1, $2, $3, $4)',[userID, studentsJudgeCodeChef[i]["studentId"], "CodeChef", problems], function(err,result) {
               //       done(); 
               //       if(err)
               //         console.log(err);
@@ -286,7 +287,7 @@ async function uvaAPICall(userID, studentsJudgeUVA) {
           //   if(err){
           //     console.log("Not able to stablish connection: "+ err);
           //   } else {
-          //     client.query('SELECT * from prc_update_student_problems($1, $2, $3, $4)',[userID, studentsJudgeUVA[i]["studentId"], response.data["uname"], "UVA", problems], function(err,result) {
+          //     client.query('SELECT * from prc_update_student_problems($1, $2, $3, $4)',[userID, studentsJudgeUVA[i]["studentId"], "UVA", problems], function(err,result) {
           //       done(); 
           //       if(err)
           //         console.log(err);

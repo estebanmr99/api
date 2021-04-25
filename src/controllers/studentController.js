@@ -109,7 +109,7 @@ export const getStudentsInfo = (req, res) => {
       console.log("Not able to stablish connection: "+ err);
       res.status(400).send(err);
     } 
-    client.query('SELECT * from prc_get_students($1)', [userID, req.body.group], function(err, result) {
+    client.query('SELECT * from prc_get_students($1, $2)', [userID, req.body.group], function(err, result) {
       done(); 
       if(err){
         console.log(err);
@@ -126,7 +126,8 @@ export const getStudentProfile = (req, res) => {
     "id": "3b57e049-a065-4f5b-a20a-43ab92c05fc3",
     "userid": "testStudentID",
     "name": "testName",
-    "lastname": "testLastName"
+    "lastname": "testLastName",
+    "judge1" : "pepito",
   };
 
   var testStudentProblems = [{"id" : "Random", "Judge": "URI"}, {"id" : "Random2", "Judge": "URI2"}]
@@ -182,7 +183,7 @@ export const removeStudentfromGroup = (req, res) => {
       console.log("Not able to stablish connection: "+ err);
       res.status(400).send(err);
     } 
-    client.query('SELECT * from prc_delete_students_from_groups($1, $2)',[userID, req.body.students, req.body.groups], function(err,result) {
+    client.query('SELECT * from prc_delete_students_from_groups($1, $2, $3)',[userID, req.body.students, req.body.groups], function(err,result) {
       done(); 
       if(err){
         console.log(err);
