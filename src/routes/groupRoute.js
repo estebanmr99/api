@@ -10,7 +10,7 @@ import { loginRequired } from '../controllers/userController.js';
 const router = Router();
 
 // Add group
-router.post('/add', addGroup);
+router.post('/add', loginRequired, addGroup);
 
 // Delete group
 router.delete('/delete/:uniqueGroupID', loginRequired, deleteGroup);
@@ -19,12 +19,12 @@ router.delete('/delete/:uniqueGroupID', loginRequired, deleteGroup);
 router.put('/update/:uniqueGroupID', loginRequired, updateGroup);
 
 // Get all groups info
-router.get('/getall', getGroupsInfo);
+router.get('/getall', loginRequired, getGroupsInfo);
 
 // Get all groups for filters
-router.get('/filter', getGroupsForFilter);
+router.get('/filter', loginRequired, getGroupsForFilter);
 
 // Get all groups for filters
-router.get('/export/:uniqueGroupID', exportGroup);
+router.get('/export/:uniqueGroupID', loginRequired, exportGroup);
 
 export default router;

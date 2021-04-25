@@ -12,14 +12,15 @@ const config = {
 
 var pool = new pg.Pool(config);
 
-// Deberia funcionar
+// Falta probar
 export const updateProblem = (req, res) => {
+  var userID = req.user._id;
   pool.connect(function(err,client,done) {
     if(err){
       console.log("Not able to stablish connection: "+ err);
       res.status(400).send(err);
     } 
-    client.query('SELECT * from prc_update_problem($1, $2)',[req.params.uniqueProblemID, req.body.problemComment], function(err,result) {
+    client.query('SELECT * from prc_update_problem($1, $2, $3)',[userID, req.params.uniqueProblemID, req.body.problemComment], function(err,result) {
       done(); 
       if(err){
         console.log(err);
@@ -30,14 +31,15 @@ export const updateProblem = (req, res) => {
   });
 }
 
-// Deberia funcionar
+// Falta probar - Falta el SP en la DB
 export const getProblemsInfo = (req, res) => {
+  var userID = req.user._id;
   pool.connect(function(err,client,done) {
     if(err){
       console.log("Not able to stablish connection: "+ err);
       res.status(400).send(err);
     } 
-    client.query('SELECT * from prc_get_problems($1)', [req.body.judges, req.body.tags], function(err, result) {
+    client.query('SELECT * from prc_get_problems($1, $2, $3)', [userID, req.body.judges, req.body.tags], function(err, result) {
       done(); 
       if(err){
         console.log(err);
@@ -48,14 +50,15 @@ export const getProblemsInfo = (req, res) => {
   });
 }
 
-// Deberia funcionar
+// Falta probar
 export const addTagToProblem = (req, res) => {
+  var userID = req.user._id;
   pool.connect(function(err,client,done) {
     if(err){
       console.log("Not able to stablish connection: "+ err);
       res.status(400).send(err);
     } 
-    client.query('SELECT * from prc_add_tag_problem($1, $2)',[req.body.tags, req.body.problems], function(err,result) {
+    client.query('SELECT * from prc_add_tags_to_problems($1, $2, $3)',[userID, req.body.tags, req.body.problems], function(err,result) {
       done(); 
       if(err){
         console.log(err);
@@ -66,14 +69,15 @@ export const addTagToProblem = (req, res) => {
   });
 }
 
-// Deberia funcionar
+// Falta probar
 export const removeTagfromProblem = (req, res) => {
+  var userID = req.user._id;
   pool.connect(function(err,client,done) {
     if(err){
       console.log("Not able to stablish connection: "+ err);
       res.status(400).send(err);
     } 
-    client.query('SELECT * from prc_delete_tag_problem($1, $2)',[req.body.tags, req.body.problems], function(err,result) {
+    client.query('SELECT * from prc_delete_tags_from_problems($1, $2, $3)',[userID, req.body.tags, req.body.problems], function(err,result) {
         done(); 
       if(err){
         console.log(err);
@@ -84,17 +88,12 @@ export const removeTagfromProblem = (req, res) => {
   });
 }
 
-// DPensar luego - deberia ir en user controller
-export const getJudgesAccessTokens = (req, res) => {
-    res.status(200).send();
-}
 
-//here we make our timeout synchronous using Promises
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Deberia funcionar
+// Falta probar - faltan los dos SPs 
 export const syncProblems = async (req, res) => {
     //var codeChefToken = req.body.codeChefToken;
 

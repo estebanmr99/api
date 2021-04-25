@@ -14,7 +14,7 @@ var upload = multer({ dest: 'uploads/' });
 const router = Router();
 
 // Add student
-router.post('/add', addStudent);
+router.post('/add', loginRequired, addStudent);
 
 // Delete student
 router.delete('/delete', loginRequired, deleteStudent);
@@ -23,10 +23,10 @@ router.delete('/delete', loginRequired, deleteStudent);
 router.put('/update/:uniqueStudentID', loginRequired, updateStudent);
 
 // Get all the students
-router.get('/getall', getStudentsInfo);
+router.get('/getall', loginRequired, getStudentsInfo);
 
 // Get profile information from student
-router.get('/profile/:uniqueStudentID', getStudentProfile);
+router.get('/profile/:uniqueStudentID', loginRequired, getStudentProfile);
 
 // Add a single or multiple students to a group
 router.put('/addtogroup', loginRequired, addStudentToGroup);
@@ -35,6 +35,6 @@ router.put('/addtogroup', loginRequired, addStudentToGroup);
 router.delete('/removefromgroup', loginRequired, removeStudentfromGroup);
 
 // Add a single or multiple students
-router.post('/importstudent', upload.single("file"), addStudentImported);
+router.post('/importstudent', upload.single("file"), loginRequired, addStudentImported);
 
 export default router;

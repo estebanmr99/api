@@ -14,8 +14,9 @@ const config = {
 
 var pool = new pg.Pool(config);
 
-// si funciona
+// Falta de probar
 export const addStudent = async (req, res) => {
+  var userID = req.user._id;
 
   var studentUsernames = req.body.judges.split(";");
   var studentJudgeIds = "";
@@ -34,7 +35,7 @@ export const addStudent = async (req, res) => {
       console.log("Not able to stablish connection: "+ err);
       res.status(400).send(err);
     } 
-    client.query('SELECT * from prc_add_student($1, $2, $3, $4, $5)', [req.body.studentID, req.body.studentName, req.body.studentLastName, req.body.judges, studentJudgeIds], function(err, result) {
+    client.query('SELECT * from prc_add_student($1, $2, $3, $4, $5, $6)', [userID, req.body.studentID, req.body.studentName, req.body.studentLastName, req.body.judges, studentJudgeIds], function(err, result) {
       done(); 
       if(err){
         console.log(err);
@@ -49,14 +50,15 @@ export const addStudent = async (req, res) => {
   });
 }
 
-// si funciona
+// Falta de probar
 export const deleteStudent = (req, res) => {
+  var userID = req.user._id;
   pool.connect(function(err,client,done) {
     if(err){
       console.log("Not able to stablish connection: "+ err);
       res.status(400).send(err);
     } 
-    client.query('SELECT * from prc_delete_students($1)', [req.body.student], function(err, result) {
+    client.query('SELECT * from prc_delete_students($1, $2)', [userID, req.body.studentId], function(err, result) {
       done(); 
       if(err){
         console.log(err);
@@ -67,14 +69,28 @@ export const deleteStudent = (req, res) => {
   });
 }
 
-// si funciona
-export const updateStudent = (req, res) => {
+// Falta de probar - No funciono
+export const updateStudent = async (req, res) => {
+  var userID = req.user._id;
+
+  var studentUsernames = req.body.judges.split(";");
+  var studentJudgeIds = "";
+  for (let i = 0; i < studentUsernames.length; i++) {
+    if (i == 2){
+      const url = 'https://uhunt.onlinejudge.org/api/uname2uid/' + studentUsernames[i];
+      const response = await axios.get(url);
+      studentJudgeIds += response.data;
+    }
+    studentJudgeIds += ";";
+  }
+  studentJudgeIds = studentJudgeIds.slice(0,-1);
+
   pool.connect(function(err,client,done) {
     if(err){
       console.log("Not able to stablish connection: "+ err);
       res.status(400).send(err);
     } 
-    client.query('SELECT * from prc_update_student($1, $2, $3, $4)',[req.params.uniqueStudentID, req.body.studentID, req.body.studentName, req.body.judges], function(err,result) {
+    client.query('SELECT * from prc_update_student($1, $2, $3, $4, $5, $6, $7)',[userID, req.params.uniqueStudentID, req.body.studentID, req.body.studentName, req.body.studentLastName, req.body.judges, studentJudgeIds], function(err,result) {
       done(); 
       if(err){
         console.log(err);
@@ -85,14 +101,15 @@ export const updateStudent = (req, res) => {
   });
 }
 
-// si funciona
+// Falta probar - falta en DB
 export const getStudentsInfo = (req, res) => {
+  var userID = req.user._id;
   pool.connect(function(err,client,done) {
     if(err){
       console.log("Not able to stablish connection: "+ err);
       res.status(400).send(err);
     } 
-    client.query('SELECT * from prc_get_students($1)', [req.body.group], function(err, result) {
+    client.query('SELECT * from prc_get_students($1)', [userID, req.body.group], function(err, result) {
       done(); 
       if(err){
         console.log(err);
@@ -103,7 +120,7 @@ export const getStudentsInfo = (req, res) => {
   });
 }
 
-// Funciona  ------------ hay que aclarar cosas del SP para el manejo de etiquetas o grupos
+// Falta probar - faltan los dos SPs
 export const getStudentProfile = (req, res) => {
   var testStudent =     {
     "id": "3b57e049-a065-4f5b-a20a-43ab92c05fc3",
@@ -113,15 +130,15 @@ export const getStudentProfile = (req, res) => {
   };
 
   var testStudentProblems = [{"id" : "Random", "Judge": "URI"}, {"id" : "Random2", "Judge": "URI2"}]
-
-  pool.connect(function(err,client,done) {
+  var userID = req.user._id;
+  pool.connect(async function(err,client,done) {
     if(err){
       console.log("Not able to stablish connection: "+ err);
       res.status(400).send(err);
     }
     try {
-      // const studentInfoResult = await client.query('SELECT * from prc_get_student_info($1)',[req.params.uniqueStudentID])
-      // const studentProblemsResult = await client.query('SELECT * from prc_get_student_problem($1)',[req.params.uniqueStudentID])
+      // const studentInfoResult = await client.query('SELECT * from prc_get_student_info($1, $2)',[userID, req.params.uniqueStudentID])
+      // const studentProblemsResult = await client.query('SELECT * from prc_get_student_problem($1, $2)',[userID, req.params.uniqueStudentID])
 
       // var studentInfo = studentInfoResult.rows;
       // var studentProblems = studentProblemsResult.rows;
@@ -138,14 +155,15 @@ export const getStudentProfile = (req, res) => {
   });
 }
 
-// Deberia funcionar
+// Falta probar - No funciona
 export const addStudentToGroup = (req, res) => {
+  var userID = req.user._id;
   pool.connect(function(err,client,done) {
     if(err){
       console.log("Not able to stablish connection: "+ err);
       res.status(400).send(err);
     } 
-    client.query('SELECT * from prc_add_student_group($1, $2)',[req.body.students, req.body.groups], function(err,result) {
+    client.query('SELECT * from prc_add_students_to_groups($1, $2, $3)',[userID, req.body.students, req.body.groups], function(err,result) {
       done(); 
       if(err){
         console.log(err);
@@ -156,14 +174,15 @@ export const addStudentToGroup = (req, res) => {
   });
 }
 
-// Deberia funcionar
+// Falta probar - No funciona
 export const removeStudentfromGroup = (req, res) => {
+  var userID = req.user._id;
   pool.connect(function(err,client,done) {
     if(err){
       console.log("Not able to stablish connection: "+ err);
       res.status(400).send(err);
     } 
-    client.query('SELECT * from prc_delete_student_group($1, $2)',[req.body.students, req.body.groups], function(err,result) {
+    client.query('SELECT * from prc_delete_students_from_groups($1, $2)',[userID, req.body.students, req.body.groups], function(err,result) {
       done(); 
       if(err){
         console.log(err);
@@ -174,7 +193,7 @@ export const removeStudentfromGroup = (req, res) => {
   });
 }
 
-// Deberia funcionar
+// Falta probar - No funciona
 export const addStudentImported = async (req, res) => {
   var filePath = req.file.path;
 
@@ -191,12 +210,14 @@ export const addStudentImported = async (req, res) => {
     }
     studentJudgeIds = studentJudgeIds.slice(0,-1);  
 
+    var userID = req.user._id;
+
     pool.connect(function(err,client,done) {
       if(err){
         console.log("Not able to stablish connection: "+ err);
         res.status(400).send(err);
       } 
-      client.query('SELECT * from prc_add_student($1, $2, $3, $4, $5)', [record.id, record.nombre, record.apellido, record.jueces, studentJudgeIds], function(err, result) {
+      client.query('SELECT * from prc_add_student($1, $2, $3, $4, $5, $6)', [userID, record.id, record.nombre, record.apellido, record.jueces, studentJudgeIds], function(err, result) {
         done(); 
         if(err){
           console.log(err);
