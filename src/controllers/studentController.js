@@ -14,14 +14,14 @@ const config = {
 
 var pool = new pg.Pool(config);
 
-// Falta de probar
+// Funciona - Yei!
 export const addStudent = async (req, res) => {
   var userID = req.user._id;
 
   var studentUsernames = req.body.judges.split(";");
   var studentJudgeIds = "";
   for (let i = 0; i < studentUsernames.length; i++) {
-    if (i == 2){
+    if (i == 2 && studentUsernames[i] != ""){
       const url = 'https://uhunt.onlinejudge.org/api/uname2uid/' + studentUsernames[i];
       const response = await axios.get(url);
       studentJudgeIds += response.data;
@@ -69,7 +69,7 @@ export const deleteStudent = (req, res) => {
   });
 }
 
-// Falta de probar - No funciono
+// Funciona - Yei!
 export const updateStudent = async (req, res) => {
   var userID = req.user._id;
 
@@ -202,7 +202,7 @@ export const addStudentImported = async (req, res) => {
     var studentUsernames = record.jueces.split(";");
     var studentJudgeIds = "";
     for (let i = 0; i < studentUsernames.length; i++) {
-      if (i == 2){
+      if (i == 2 && studentUsernames[i] != ""){
         const url = 'https://uhunt.onlinejudge.org/api/uname2uid/' + studentUsernames[i];
         const response = await axios.get(url);
         studentJudgeIds += response.data;

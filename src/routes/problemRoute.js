@@ -3,6 +3,7 @@ import { updateProblem,
          getProblemsInfo,
          removeTagfromProblem,
          addTagToProblem,
+         getJudges,
          syncProblems} from '../controllers/problemController.js';
 import { loginRequired } from '../controllers/userController.js';
 
@@ -19,6 +20,9 @@ router.put('/addtag', loginRequired, addTagToProblem);
 
 // Delete a single or multiple tags from problems
 router.delete('/removetag', loginRequired, removeTagfromProblem);
+
+// Get all the judges
+router.get('/judges', loginRequired, getJudges);
 
 // Sync the problems solved by students from judges
 router.get('/sync', loginRequired, syncProblems);
