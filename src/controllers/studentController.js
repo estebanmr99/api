@@ -22,7 +22,7 @@ export const addStudent = async (req, res) => {
   var studentJudgeIds = "";
   for (let i = 0; i < studentUsernames.length; i++) {
     if (i == 2 && studentUsernames[i] != ""){
-      const url = 'https://uhunt.onlinejudge.org/api/uname2uid/' + studentUsernames[i];
+      const url = process.env.UVA_GET_ID + studentUsernames[i];
       const response = await axios.get(url);
       studentJudgeIds += response.data;
     }
@@ -77,7 +77,7 @@ export const updateStudent = async (req, res) => {
   var studentJudgeIds = "";
   for (let i = 0; i < studentUsernames.length; i++) {
     if (i == 2 && studentUsernames[i] != ""){
-      const url = 'https://uhunt.onlinejudge.org/api/uname2uid/' + studentUsernames[i];
+      const url = process.env.UVA_GET_ID + studentUsernames[i];
       const response = await axios.get(url);
       studentJudgeIds += response.data;
     }
@@ -127,10 +127,9 @@ export const getStudentProfile = (req, res) => {
     "userid": "testStudentID",
     "name": "testName",
     "lastname": "testLastName",
-    "judge1" : "pepito",
   };
 
-  var testStudentProblems = [{"id" : "Random", "Judge": "URI"}, {"id" : "Random2", "Judge": "URI2"}]
+  var testStudentProblems = [{"id" : "Random", "Judge": "URI"}, {"id" : "Random2", "Judge": "URI2"}];
   var userID = req.user._id;
   pool.connect(async function(err,client,done) {
     if(err){
@@ -139,11 +138,14 @@ export const getStudentProfile = (req, res) => {
     }
     try {
       // const studentInfoResult = await client.query('SELECT * from prc_get_student_info($1, $2)',[userID, req.params.uniqueStudentID])
+      // const studentJudgesResult = await client.query('SELECT * from prc_get_student_usernames($1, $2)',[userID, req.params.uniqueStudentID])
       // const studentProblemsResult = await client.query('SELECT * from prc_get_student_problem($1, $2)',[userID, req.params.uniqueStudentID])
 
       // var studentInfo = studentInfoResult.rows;
+      // var studentJudges = studentJudgesResult.rows;
       // var studentProblems = studentProblemsResult.rows;
 
+      // studentInfo["Judges"] = studentJudges;
       // studentInfo["Problems"] = studentProblems;
 
       testStudent["Problems"] = testStudentProblems;
@@ -203,7 +205,7 @@ export const addStudentImported = async (req, res) => {
     var studentJudgeIds = "";
     for (let i = 0; i < studentUsernames.length; i++) {
       if (i == 2 && studentUsernames[i] != ""){
-        const url = 'https://uhunt.onlinejudge.org/api/uname2uid/' + studentUsernames[i];
+        const url = process.env.UVA_GET_ID + studentUsernames[i];
         const response = await axios.get(url);
         studentJudgeIds += response.data;
       }
