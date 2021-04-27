@@ -219,7 +219,7 @@ async function codeForcesAPICall(userID, studentsJudgeCodeForces) {
 
 async function codeChefAPICall(userID, studentsJudgeCodeChef) {
     try {
-        var data = JSON.stringify({"grant_type":"client_credentials","scope":"public","client_id":"ce8dd1716ceb5641237ddb77eaf35615","client_secret":"6a3f2deeca7d06b9f621effe163b5811","redirect_uri":"http://localhost:8000/"});
+        var data = JSON.stringify({"grant_type":"client_credentials","scope":"public","client_id": process.env.CLIENT_ID,"client_secret": process.env.CLIENT_SECRET,"redirect_uri":"http://localhost:8000/"});
 
         const url = 'https://api.codechef.com/oauth/token';
         const headers = {

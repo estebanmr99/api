@@ -76,7 +76,7 @@ export const updateStudent = async (req, res) => {
   var studentUsernames = req.body.judges.split(";");
   var studentJudgeIds = "";
   for (let i = 0; i < studentUsernames.length; i++) {
-    if (i == 2){
+    if (i == 2 && studentUsernames[i] != ""){
       const url = 'https://uhunt.onlinejudge.org/api/uname2uid/' + studentUsernames[i];
       const response = await axios.get(url);
       studentJudgeIds += response.data;
