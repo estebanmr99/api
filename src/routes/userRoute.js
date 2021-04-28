@@ -3,10 +3,10 @@ import { login, register } from '../controllers/userController.js';
 
 const router = Router();
 
-// registration route
+// Registration route
 router.post('/auth/register', register);
 
-// login route
+// Login route
 router.post('/login', login);
 
 export default router;

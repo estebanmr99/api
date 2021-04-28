@@ -34,7 +34,7 @@ router.put('/addtogroup', loginRequired, addStudentToGroup);
 // Delete a single or multiple students from a group
 router.delete('/removefromgroup', loginRequired, removeStudentfromGroup);
 
-// Add a single or multiple students
+// Add a single or multiple students from a CSV file
 router.post('/importstudent', upload.single("file"), loginRequired, addStudentImported);
 
 export default router;

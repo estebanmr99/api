@@ -9,10 +9,11 @@ const app = express();
 
 app.use(cors());
 
+//Body parser library to handle request content
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// JWT setup
+// JWT validation in case token was sent in the request
 app.use((req, res, next) => {
   if (req.headers && req.headers.authorization && req.headers.authorization.split(' ')[0] === 'JWT') {
       jsonwebtoken.verify(req.headers.authorization.split(' ')[1], process.env.SECRET_KEY, (err, decode) => {
@@ -26,8 +27,10 @@ app.use((req, res, next) => {
   }
 });
 
+// Route mapping
 routes(app);
 
+//App server initialize 
 app.listen(process.env.PORT, () =>
   console.log(`App listening on port ${process.env.PORT}!`),
 );
