@@ -15,7 +15,7 @@ const config = {
 
 var pool = new pg.Pool(config);
 
-// Funciona - Yei!
+
 // Function to create a student
 // Will recieve in the body:
 //                            the student id
@@ -62,7 +62,7 @@ export const addStudent = async (req, res) => {
     });
 }
 
-// Falta de probar
+
 // Function to delete a student
 // Will recieve in the body:
 //                            the student unique id
@@ -90,7 +90,7 @@ export const deleteStudent = (req, res) => {
     });
 }
 
-// Funciona - Yei!
+
 // Function to update a student
 // Will recieve in the body:
 //                            the student unique id
@@ -134,48 +134,12 @@ export const updateStudent = async (req, res) => {
     });
 }
 
-// Falta probar - falta en DB
+
 // Function to get all the students based on the user id
 // Will recieve in the body:
 //                            the group unique id (if it's necessary to filter)
 
 export const getStudentsInfo = (req, res) => {
-    var userID = req.user._id;
-    // Preparing the pool connection to the DB
-    pool.connect(function (err, client, done) {
-        if (err) {
-            console.log("Not able to stablish connection: " + err);
-            // Return the error with BAD REQUEST (400) status
-            res.status(400).send(err);
-        }
-        // Execution of a query directly into the DB with parameters
-        client.query('SELECT * from prc_get_students($1, $2)', [userID, req.body.group], function (err, result) {
-            done();
-            if (err) {
-                console.log(err);
-                // Return the error with BAD REQUEST (400) status
-                res.status(400).send(err);
-            }
-            // Return the result from the DB with OK (200) status
-            res.status(200).send(result.rows);
-        });
-    });
-}
-
-// Falta probar - faltan los dos SPs
-// Function to student profile information
-// Will recieve in the body:
-//                            the unique student id
-
-export const getStudentProfile = (req, res) => {
-    var testStudent = {
-        "id": "3b57e049-a065-4f5b-a20a-43ab92c05fc3",
-        "userid": "testStudentID",
-        "name": "testName",
-        "lastname": "testLastName",
-    };
-
-    var testStudentProblems = [{ "id": "Random", "Judge": "URI" }, { "id": "Random2", "Judge": "URI2" }];
     var userID = req.user._id;
     // Preparing the pool connection to the DB
     pool.connect(async function (err, client, done) {
@@ -186,21 +150,35 @@ export const getStudentProfile = (req, res) => {
         }
         try {
             // Execution of a queries directly into the DB with parameters
-            // const studentInfoResult = await client.query('SELECT * from prc_get_student_info($1, $2)',[userID, req.params.uniqueStudentID])
-            // const studentJudgesResult = await client.query('SELECT * from prc_get_student_usernames($1, $2)',[userID, req.params.uniqueStudentID])
-            // const studentProblemsResult = await client.query('SELECT * from prc_get_student_problem($1, $2)',[userID, req.params.uniqueStudentID])
+            const studentsResult = await client.query('SELECT * from prc_get_students($1, $2)',[userID, req.body.groupID]);
 
-            // var studentInfo = studentInfoResult.rows;
-            // var studentJudges = studentJudgesResult.rows;
-            // var studentProblems = studentProblemsResult.rows;
+            var students = [];
+            var studentsIDs = "";
 
-            // studentInfo["Judges"] = studentJudges;
-            // studentInfo["Problems"] = studentProblems;
+            for (let i = 0; i < studentsResult.rows.length; i++) {
+                students.push(flattenObjectExceptArr(studentsResult.rows[i]));
+                studentsIDs += students[i]["id"] + ";";
+            }
+            studentsIDs = studentsIDs.slice(0, -1);
 
-            testStudent["Problems"] = testStudentProblems;
+            const studentsUsernamesResult = await client.query('SELECT * from prc_get_students_usernames($1, $2)',[userID, studentsIDs]);
+
+            var studentsUsernames = [];
+
+            for (let i = 0; i < studentsUsernamesResult.rows.length; i++) {
+                studentsUsernames.push(flattenObject(studentsUsernamesResult.rows[i]));
+            }
+
+            for(var i = 0; i < students.length; i++) {
+                var usernames = studentsUsernames.filter(item => item.studentId == students[i]["id"]);
+
+                for (var key in usernames[0]){
+                    students[i][key] = usernames[0][key];
+                }
+            }
 
             // Return the result from the DB with OK (200) status
-            res.status(200).send(testStudent);
+            res.status(200).send(students);
         } catch (err) {
             console.log(err.stack);
             // Return the error with BAD REQUEST (400) status
@@ -209,7 +187,50 @@ export const getStudentProfile = (req, res) => {
     });
 }
 
-// Falta probar - No funciona
+
+// Function to student profile information
+// Will recieve in the body:
+//                            the unique student id
+
+export const getStudentProfile = (req, res) => {
+    var userID = req.user._id;
+    // Preparing the pool connection to the DB
+    pool.connect(async function (err, client, done) {
+        if (err) {
+            console.log("Not able to stablish connection: " + err);
+            // Return the error with BAD REQUEST (400) status
+            res.status(400).send(err);
+        }
+        try {
+            // Execution of a queries directly into the DB with parameters
+            const studentInfoResult = await client.query('SELECT * from prc_get_student_info($1, $2)',[userID, req.params.uniqueStudentID])
+            const studentJudgesResult = await client.query('SELECT * from prc_get_student_usernames($1, $2)',[userID, req.params.uniqueStudentID])
+            const studentProblemsResult = await client.query('SELECT * from prc_get_student_problem($1, $2)',[userID, req.params.uniqueStudentID])
+
+            var studentInfo = studentInfoResult.rows[0];
+            var studentJudges = flattenObject(studentJudgesResult.rows);
+            var studentProblems = studentProblemsResult.rows;
+
+            studentInfo["Judges"] = studentJudges;
+            
+            var studentProblemsFlattern = [];
+            for (let i = 0; i < studentProblems.length; i++) {
+                studentProblemsFlattern.push(flattenObject(studentProblems[i]));
+            }
+
+            studentInfo["Problems"] = studentProblemsFlattern;
+
+            // Return the result from the DB with OK (200) status
+            res.status(200).send(studentInfo);
+        } catch (err) {
+            console.log(err.stack);
+            // Return the error with BAD REQUEST (400) status
+            res.status(400).send(err);
+        }
+    });
+}
+
+
 // Function to add a single or multiple students to a single multiple groups 
 // Will recieve in the body:
 //                            the unique student ids
@@ -238,7 +259,7 @@ export const addStudentToGroup = (req, res) => {
     });
 }
 
-// Falta probar - No funciona
+
 // Function to remove a single or multiple students from a single multiple groups 
 // Will recieve in the body:
 //                            the unique student ids
@@ -267,7 +288,7 @@ export const removeStudentfromGroup = (req, res) => {
     });
 }
 
-// Falta probar - No funciona
+
 // Function to create a single or multiple students from a CSV file
 // Will recieve in the file:
 //                            the student id
@@ -361,4 +382,32 @@ function parseCSVFile(sourceFilePath, columns, onNewRecord, handleError, done) {
     });
 
     source.pipe(parser);
+}
+
+const flattenObjectExceptArr = (obj) => {
+    const flattened = {}
+  
+    Object.keys(obj).forEach((key) => {
+      if (!Array.isArray(obj[key]) && typeof obj[key] === 'object' && obj[key] !== null) {
+        Object.assign(flattened, flattenObjectExceptArr(obj[key]))
+      } else {
+        flattened[key] = obj[key]
+      }
+    })
+  
+    return flattened
+}
+
+const flattenObject = (obj) => {
+    const flattened = {}
+  
+    Object.keys(obj).forEach((key) => {
+      if (typeof obj[key] === 'object' && obj[key] !== null) {
+        Object.assign(flattened, flattenObject(obj[key]))
+      } else {
+        flattened[key] = obj[key]
+      }
+    })
+  
+    return flattened
 }

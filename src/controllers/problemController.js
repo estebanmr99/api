@@ -13,7 +13,7 @@ const config = {
 
 var pool = new pg.Pool(config);
 
-// Falta probar
+
 // Function to update a problem
 // Will recieve in the body:
 //                            the unique problem id
@@ -42,7 +42,7 @@ export const updateProblem = (req, res) => {
     });
 }
 
-// Falta probar - Falta el SP en la DB
+
 // Function to get all the problem based on the user id
 // Will recieve in the body:
 //                            the unique judge ids (if it's necessary to filter)
@@ -65,13 +65,20 @@ export const getProblemsInfo = (req, res) => {
                 // Return the error with BAD REQUEST (400) status
                 res.status(400).send(err);
             }
+
+            var problems = [];
+            for (let i = 0; i < result.rows.length; i++) {
+                problems.push(flattenObjectExceptArr(result.rows[i]));
+
+            }
+
             // Return the result from the DB with OK (200) status
-            res.status(200).send(result.rows);
+            res.status(200).send(problems);
         });
     });
 }
 
-// Falta probar - Falta el SP en la DB
+
 // Function to get judges names for the filter
 
 export const getJudges = (req, res) => {
@@ -83,7 +90,7 @@ export const getJudges = (req, res) => {
             res.status(400).send(err);
         }
         // Execution of a query directly into the DB with parameters
-        client.query('SELECT * from prc_get_judges()', [], function (err, result) {
+        client.query('SELECT * from prc_get_judges_names()', [], function (err, result) {
             done();
             if (err) {
                 console.log(err);
@@ -96,7 +103,7 @@ export const getJudges = (req, res) => {
     });
 }
 
-// Falta probar
+
 // Function to add a single or multiple tags to a single or multiple problems
 // Will recieve in the body:
 //                            the unique tag ids
@@ -125,7 +132,7 @@ export const addTagToProblem = (req, res) => {
     });
 }
 
-// Falta probar
+
 // Function to remove a single or multiple tags from a single or multiple problems
 // Will recieve in the body:
 //                            the unique tag ids
@@ -160,66 +167,59 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// Falta probar - faltan los dos SPs
 // Function to synchronize all the problems associated to any student based on the user id
 
 export const syncProblems = async (req, res) => {
     var userID = req.user._id;
-    // var userID = "3b57e049-a065-4f5b-a20a-43ab92c05fc3";
-    // var studentsJudgeCodeForces;
-    // var studentsJudgeCodeChef;
-    // var studentsJudgeUVA;
 
-    var studentsJudgeCodeChef = [{
-        "studentId": "3b57e049", "studentUsername": "joss15"
-    },
-    {
-        "studentId": "3b57e048", "studentUsername": "estebanmrj99"
-    }]
-    var studentsJudgeUVA = [{
-        "studentId": "38cff5fd-126a-447d-bb13-403ec84f6089", "studentUserId": "1139"
-    }]
-    var studentsJudgeCodeForces = [{
-        "studentId": "3b57e049", "studentUsername": "nostarck"
-    },
-    {
-        "studentId": "3b57e048", "studentUsername": "Fefer_Ivan"
-    }]
-    // // Preparing the pool connection to the DB
-    // pool.connect(async function(err,client,done) {
-    //     if(err){
-    //       console.log("Not able to stablish connection: "+ err);
-    // Return the error with BAD REQUEST (400) status
-    //       res.status(400).send(err);
-    //     }
-    //     try {
-    //          // Execution of a queries directly into the DB with parameters
-    //         const studentsJudgeCodeForcesResult = await client.query('SELECT * from prc_get_students_judge($1, $2)',[userID, "CodeForces"]);
-    //         const studentsJudgeCodeChefResult = await client.query('SELECT * from prc_get_students_judge($1, $2)',[userID, "CodeChef"]);
-    //         const studentsJudgeUVAResult = await client.query('SELECT * from prc_get_students_judge($1, $2)',[userID, "UVA"]);
+    // Preparing the pool connection to the DB
+    pool.connect(async function (err, client, done) {
+        if (err) {
+            console.log("Not able to stablish connection: " + err);
+            // Return the error with BAD REQUEST(400) status
+            res.status(400).send(err);
+        }
+        try {
+            // Execution of a queries directly into the DB with parameters
+            const studentsJudgeCodeForcesResult = await client.query('SELECT * from prc_get_students_judge($1, $2)', [userID, "CodeForces"]);
+            const studentsJudgeCodeChefResult = await client.query('SELECT * from prc_get_students_judge($1, $2)', [userID, "CodeChef"]);
+            const studentsJudgeUVAResult = await client.query('SELECT * from prc_get_students_judge($1, $2)', [userID, "UVA"]);
 
-    //         studentsJudgeCodeForces = studentsJudgeCodeForcesResult.rows;
-    //         studentsJudgeCodeChef = studentsJudgeCodeChefResult.rows;
-    //         studentsJudgeUVA = studentsJudgeUVAResult.rows;
+            var studentsJudgeCodeForces = [];
+            var studentsJudgeCodeChef = [];
+            var studentsJudgeUVA = [];
 
-    //     } catch (err) {
-    //       console.log(err.stack);
-    // Return the error with BAD REQUEST (400) status
-    //       res.status(400).send(err);
-    //     }
-    // });
+            if (studentsJudgeUVAResult.rows.length == studentsJudgeCodeChefResult.rows.length && studentsJudgeCodeChefResult.rows.length == studentsJudgeCodeForcesResult.rows.length){
+                for (let i = 0; i < studentsJudgeUVAResult.rows.length; i++) {
+                    studentsJudgeUVA.push(flattenObject(studentsJudgeUVAResult.rows[i]));
+                    studentsJudgeCodeChef.push(flattenObject(studentsJudgeCodeChefResult.rows[i]));
+                    studentsJudgeCodeForces.push(flattenObject(studentsJudgeCodeForcesResult.rows[i]));
+                }
+            } else {
+                throw err;
+            }
+            console.log(studentsJudgeUVA);
 
-    // const [codeForcesResult, codeChefResult, uvaResult] = await Promise.all([codeForcesAPICall(userID, studentsJudgeCodeForces), 
-    //                                                                          codeChefAPICall(userID, studentsJudgeCodeChef), 
-    //                                                                          uvaAPICall(userID, studentsJudgeUVA)]);
+            // const [codeForcesResult, codeChefResult, uvaResult] = await Promise.all([codeForcesAPICall(userID, studentsJudgeCodeForces),
+            // codeChefAPICall(userID, studentsJudgeCodeChef),
+            // uvaAPICall(userID, studentsJudgeUVA)]);
 
-    const [uvaResult] = await Promise.all([uvaAPICall(userID, studentsJudgeUVA)]);
+            const [uvaResult] = await Promise.all([
+            uvaAPICall(userID, studentsJudgeUVA)]);
+            
 
-    // Return the result from the DB with OK (200) status
-    res.status(200).send();
+            // Return the result from the DB with OK (200) status
+            res.status(200).send();
+
+        } catch (err) {
+            console.log(err.stack);
+            // Return the error with BAD REQUEST (400) status
+            res.status(400).send(err);
+        }
+    });
 }
 
-// Funciona - Yei!
+
 //  Internal function to make the calls to the CodeForces API and retrieve the problems solved for each student 
 //      with the user id and the students information as parameters
 
@@ -233,7 +233,7 @@ async function codeForcesAPICall(userID, studentsJudgeCodeForces) {
             };
 
             try {
-                const response = await axios.get(url, options);
+                const response = await axios.get(url, options).catch(next(err));
                 var studentProblems = response.data["result"].filter(item => item.verdict == "OK");
                 var problems = "";
                 for (let j = 0; j < studentProblems.length; j++) {
@@ -276,11 +276,13 @@ async function codeForcesAPICall(userID, studentsJudgeCodeForces) {
                 console.log("delay");
                 await sleep(1000);
             }
+        } else {
+            continue;
         }
     }
 }
 
-// Funciona - Yei!
+
 //  Internal function to make the calls to the CodeChef API and retrieve the problems solved for each student 
 //      with the user id and the students information as parameters
 
@@ -354,6 +356,8 @@ async function codeChefAPICall(userID, studentsJudgeCodeChef) {
                     console.log("delay");
                     await sleep(300000);
                 }
+            } else {
+                continue;
             }
         }
     } catch (err) {
@@ -362,15 +366,15 @@ async function codeChefAPICall(userID, studentsJudgeCodeChef) {
 
 }
 
-// Funciona - Yei!
+
 //  Internal function to make the calls to the UVA API and retrieve the problems solved for each student 
 //      with the user id and the students information as parameters
 
 async function uvaAPICall(userID, studentsJudgeUVA) {
     var judgeName = "UVA";
     for (let i = 0; i < studentsJudgeUVA.length; i++) {
-        if (studentsJudgeUVA[i]["studentUserId"] != "") {
-            const url = process.env.UVA_GET_USERS + studentsJudgeUVA[i]["studentUserId"];
+        if (studentsJudgeUVA[i]["studentUserID"] != "") {
+            const url = process.env.UVA_GET_USERS + studentsJudgeUVA[i]["studentUserID"];
 
             try {
                 const response = await axios.get(url);
@@ -411,6 +415,41 @@ async function uvaAPICall(userID, studentsJudgeUVA) {
                     }
                 });
             }
+        }else{
+            continue;
         }
     }
 }
+
+const flattenObject = (obj) => {
+    const flattened = {}
+  
+    Object.keys(obj).forEach((key) => {
+      if (typeof obj[key] === 'object' && obj[key] !== null) {
+        Object.assign(flattened, flattenObject(obj[key]))
+      } else {
+        flattened[key] = obj[key]
+      }
+    })
+  
+    return flattened
+}
+
+const flattenObjectExceptArr = (obj) => {
+    const flattened = {}
+  
+    Object.keys(obj).forEach((key) => {
+      if (!Array.isArray(obj[key]) && typeof obj[key] === 'object' && obj[key] !== null) {
+        Object.assign(flattened, flattenObjectExceptArr(obj[key]))
+      } else {
+        flattened[key] = obj[key]
+      }
+    })
+  
+    return flattened
+}
+
+// Error handling for http calls
+process.on("unhandledRejection", err => {
+    console.log("Unhandled rejection:", err.message);
+});

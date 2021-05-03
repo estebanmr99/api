@@ -12,7 +12,7 @@ const config = {
 
 var pool = new pg.Pool(config);
 
-// Funciona - Yei!
+
 // Function to create a tag
 // Will recieve in the body:
 //                            the tag name
@@ -45,7 +45,7 @@ export const addTag = (req, res) => {
     });
 }
 
-// Funciona - Yei!
+
 // Function to delete a tag
 // Will recieve in the body:
 //                            the unique tag id
@@ -74,7 +74,7 @@ export const deleteTag = (req, res) => {
     });
 }
 
-// Funciona - Yei!
+
 // Function to update a tag name
 // Will recieve in the body:
 //                            the unique tag id
@@ -103,7 +103,7 @@ export const updateTag = (req, res) => {
     });
 }
 
-// Funciona - Yei!
+
 // Function to get all the tags associated to a user
 
 export const getTagsInfo = (req, res) => {
@@ -129,7 +129,7 @@ export const getTagsInfo = (req, res) => {
     });
 }
 
-// Funciona - Yei!
+
 // Function to get all the tag name used by the filter based on the user id
 
 export const getTagsNames = (req, res) => {
