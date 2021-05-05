@@ -12,7 +12,7 @@ const router = Router();
 router.post('/add', loginRequired, addTag);
 
 // Delete tag
-router.delete('/delete', loginRequired, deleteTag);
+router.delete('/delete/:uniqueTagID', loginRequired, deleteTag);
 
 // Update student information
 router.put('/update/:uniqueTagID', loginRequired, updateTag);
