@@ -61,7 +61,7 @@ export const deleteTag = (req, res) => {
             res.status(400).send(err);
         }
         // Execution of a query directly into the DB with parameters
-        client.query('SELECT * from prc_delete_tags($1, $2)', [userID, req.params.uniqueTagID], function (err, result) {
+        client.query('SELECT * from prc_delete_tags($1, $2)', [userID, req.body.uniqueTagID], function (err, result) {
             done();
             if (err) {
                 console.log(err);
