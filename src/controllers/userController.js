@@ -95,8 +95,14 @@ export const login = (req, res) => {
                         // Return the error with UNAUTHORIZED (401) status
                         res.status(401).json({ message: 'Authentication failed. Wrong password' });
                     } else {
+
+
+                    const currentDate = new Date();
+                    currentDate.setHours( currentDate.getHours() + 7 );
                         // Return the JWT token with OK (200) status
-                        return res.json({ token: jwt.sign({ username: user.username, _id: user.id }, process.env.SECRET_KEY) });
+                        return res.json({ token: jwt.sign({ username: user.username, 
+                                                            _id: user.id,
+                                                            exp: Math.floor(currentDate / 1000)}, process.env.SECRET_KEY) });
                     }
 
                 }
