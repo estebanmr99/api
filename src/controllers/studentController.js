@@ -77,7 +77,7 @@ export const deleteStudent = (req, res) => {
             res.status(400).send(err);
         }
         // Execution of a query directly into the DB with parameters
-        client.query('SELECT * from prc_delete_students($1, $2)', [userID, req.body.studentId], function (err, result) {
+        client.query('SELECT * from prc_delete_students($1, $2)', [userID, req.body.uniqueStudentID], function (err, result) {
             done();
             if (err) {
                 console.log(err);
@@ -150,18 +150,18 @@ export const getStudentsInfo = (req, res) => {
         }
         try {
             // Execution of a queries directly into the DB with parameters
-            const studentsResult = await client.query('SELECT * from prc_get_students($1, $2)',[userID, req.body.groupID]);
+            const studentsResult = await client.query('SELECT * from prc_get_students($1, $2)',[userID, req.body.uniqueGroupID]);
 
             var students = [];
-            var studentsIDs = "";
+            var uniqueStudentsIDs = "";
 
             for (let i = 0; i < studentsResult.rows.length; i++) {
                 students.push(flattenObjectExceptArr(studentsResult.rows[i]));
-                studentsIDs += students[i]["id"] + ";";
+                uniqueStudentsIDs += students[i]["id"] + ";";
             }
-            studentsIDs = studentsIDs.slice(0, -1);
+            uniqueStudentsIDs = uniqueStudentsIDs.slice(0, -1);
 
-            const studentsUsernamesResult = await client.query('SELECT * from prc_get_students_usernames($1, $2)',[userID, studentsIDs]);
+            const studentsUsernamesResult = await client.query('SELECT * from prc_get_students_usernames($1, $2)',[userID, uniqueStudentsIDs]);
 
             var studentsUsernames = [];
 
@@ -246,7 +246,7 @@ export const addStudentToGroup = (req, res) => {
             res.status(400).send(err);
         }
         // Execution of a query directly into the DB with parameters
-        client.query('SELECT * from prc_add_students_to_groups($1, $2, $3)', [userID, req.body.students, req.body.groups], function (err, result) {
+        client.query('SELECT * from prc_add_students_to_groups($1, $2, $3)', [userID, req.body.uniqueStudentsIDs, req.body.uniqueGroupsIDs], function (err, result) {
             done();
             if (err) {
                 console.log(err);

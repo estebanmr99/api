@@ -58,7 +58,7 @@ export const getProblemsInfo = (req, res) => {
             res.status(400).send(err);
         }
         // Execution of a query directly into the DB with parameters
-        client.query('SELECT * from prc_get_problems($1, $2, $3)', [userID, req.body.judgesIDs, req.body.tagsID], function (err, result) {
+        client.query('SELECT * from prc_get_problems($1, $2, $3)', [userID, req.body.uniqueJudgesIDs, req.body.uniqueTagsIDs], function (err, result) {
             done();
             if (err) {
                 console.log(err);
@@ -119,7 +119,7 @@ export const addTagToProblem = (req, res) => {
             res.status(400).send(err);
         }
         // Execution of a query directly into the DB with parameters
-        client.query('SELECT * from prc_add_tags_to_problems($1, $2, $3)', [userID, req.body.tagsIDs, req.body.problemsIDs], function (err, result) {
+        client.query('SELECT * from prc_add_tags_to_problems($1, $2, $3)', [userID, req.body.uniqueTagsIDs, req.body.uniqueProblemsIDs], function (err, result) {
             done();
             if (err) {
                 console.log(err);
