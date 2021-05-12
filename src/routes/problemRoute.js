@@ -13,7 +13,7 @@ const router = Router();
 router.put('/update/:uniqueProblemID', loginRequired, updateProblem);
 
 // Get all the problems
-router.get('/getall', loginRequired, getProblemsInfo);
+router.post('/getall', loginRequired, getProblemsInfo);
 
 // Add a single or multiple tags to problems
 router.put('/addtag', loginRequired, addTagToProblem);
