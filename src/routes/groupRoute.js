@@ -19,7 +19,7 @@ router.delete('/delete/:uniqueGroupID', loginRequired, deleteGroup);
 router.put('/update/:uniqueGroupID', loginRequired, updateGroup);
 
 // Get all groups info
-router.get('/getall', loginRequired, getGroupsInfo);
+router.post('/getall', loginRequired, getGroupsInfo);
 
 // Get all groups for filters
 router.get('/filter', loginRequired, getGroupsForFilter);

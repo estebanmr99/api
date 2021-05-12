@@ -131,6 +131,7 @@ export const getGroupsInfo = (req, res) => {
             }
 
             for(var i = 0; i < groupsInfo.length; i++) {
+                groupsInfo[i]["isExpanded"] = false;
                 groupsInfo[i]["students"] = groupsStudentsFlatten.filter(item => item.groupid == groupsInfo[i]["id"]);
             }
 
