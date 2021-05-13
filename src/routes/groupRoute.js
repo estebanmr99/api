@@ -24,7 +24,7 @@ router.post('/getall', loginRequired, getGroupsInfo);
 // Get all groups for filters
 router.get('/filter', loginRequired, getGroupsForFilter);
 
-// Get all groups for filters
+// Export group
 router.get('/export/:uniqueGroupID', loginRequired, exportGroup);
 
 export default router;
