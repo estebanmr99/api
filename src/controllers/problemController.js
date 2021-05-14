@@ -50,6 +50,7 @@ export const updateProblem = (req, res) => {
 
 export const getProblemsInfo = (req, res) => {
     var userID = req.user._id;
+
     // Preparing the pool connection to the DB
     pool.connect(function (err, client, done) {
         if (err) {
@@ -171,7 +172,6 @@ function sleep(ms) {
 
 export const syncProblems = async (req, res) => {
     var userID = req.user._id;
-
     // Preparing the pool connection to the DB
     pool.connect(async function (err, client, done) {
         if (err) {
@@ -184,7 +184,6 @@ export const syncProblems = async (req, res) => {
             const studentsJudgeCodeForcesResult = await client.query('SELECT * from prc_get_students_judge($1, $2)', [userID, "CodeForces"]);
             const studentsJudgeCodeChefResult = await client.query('SELECT * from prc_get_students_judge($1, $2)', [userID, "CodeChef"]);
             const studentsJudgeUVAResult = await client.query('SELECT * from prc_get_students_judge($1, $2)', [userID, "UVA"]);
-
             var studentsJudgeCodeForces = [];
             var studentsJudgeCodeChef = [];
             var studentsJudgeUVA = [];
@@ -198,7 +197,7 @@ export const syncProblems = async (req, res) => {
             } else {
                 throw err;
             }
-            console.log(studentsJudgeUVA);
+     
 
             const [codeForcesResult, codeChefResult, uvaResult] = await Promise.all([codeForcesAPICall(userID, studentsJudgeCodeForces),
             codeChefAPICall(userID, studentsJudgeCodeChef),
@@ -256,6 +255,8 @@ async function codeForcesAPICall(userID, studentsJudgeCodeForces) {
                 });
                 console.log(i);
             } catch (err) {
+
+                console.log(err);
                 // Preparing the pool connection to the DB
                 pool.connect(function (err, client, done) {
                     if (err) {
@@ -264,8 +265,8 @@ async function codeForcesAPICall(userID, studentsJudgeCodeForces) {
                         // Execution of a query directly into the DB with parameters
                         client.query('SELECT * from prc_add_student_log($1, $2, $3)', [userID, studentsJudgeCodeForces[i]["studentUsername"], judgeName], function (err, result) {
                             done();
-                            if (err)
-                                console.log(err);
+                            //if (err)
+                              //  console.log(err);
                         });
                     }
                 });
