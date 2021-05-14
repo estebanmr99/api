@@ -23,7 +23,7 @@ router.delete('/delete', loginRequired, deleteStudent);
 router.put('/update/:uniqueStudentID', loginRequired, updateStudent);
 
 // Get all the students
-router.get('/getall', loginRequired, getStudentsInfo);
+router.post('/getall', loginRequired, getStudentsInfo);
 
 // Get profile information from student
 router.get('/profile/:uniqueStudentID', loginRequired, getStudentProfile);

@@ -25,7 +25,7 @@ var pool = new pg.Pool(config);
 
 export const addStudent = async (req, res) => {
     var userID = req.user._id;
-
+    console.log(userID)
     var studentUsernames = req.body.judges.split(";");
     var studentJudgeIds = "";
     for (let i = 0; i < studentUsernames.length; i++) {
@@ -55,6 +55,7 @@ export const addStudent = async (req, res) => {
             var student;
             for (var i = 0; i < result.rows.length; i++) {
                 student = result.rows[i];
+                console.log( result.rows[i]);
             }
             // Return the result from the DB with OK (200) status
             res.status(200).send(student);
@@ -151,7 +152,6 @@ export const getStudentsInfo = (req, res) => {
         try {
             // Execution of a queries directly into the DB with parameters
             const studentsResult = await client.query('SELECT * from prc_get_students($1, $2)',[userID, req.body.uniqueGroupID]);
-
             var students = [];
             var uniqueStudentsIDs = "";
 
@@ -168,14 +168,18 @@ export const getStudentsInfo = (req, res) => {
             for (let i = 0; i < studentsUsernamesResult.rows.length; i++) {
                 studentsUsernames.push(flattenObject(studentsUsernamesResult.rows[i]));
             }
-
+          
+     
             for(var i = 0; i < students.length; i++) {
-                var usernames = studentsUsernames.filter(item => item.studentId == students[i]["id"]);
-
+                var usernames = studentsUsernames.filter(item => item.id == students[i]["id"]);
+                
                 for (var key in usernames[0]){
                     students[i][key] = usernames[0][key];
+                   
+                   
                 }
             }
+            
 
             // Return the result from the DB with OK (200) status
             res.status(200).send(students);
@@ -267,6 +271,7 @@ export const addStudentToGroup = (req, res) => {
 
 export const removeStudentfromGroup = (req, res) => {
     var userID = req.user._id;
+
     // Preparing the pool connection to the DB
     pool.connect(function (err, client, done) {
         if (err) {
@@ -275,7 +280,9 @@ export const removeStudentfromGroup = (req, res) => {
             res.status(400).send(err);
         }
         // Execution of a query directly into the DB with parameters
-        client.query('SELECT * from prc_delete_students_from_groups($1, $2, $3)', [userID, req.body.students, req.body.groups], function (err, result) {
+        console.log("Parametros de remove")
+        console.log([userID, req.body.uniqueStudentsIDs, req.body.uniqueGroupsIDs])
+        client.query('SELECT * from prc_delete_students_from_groups($1, $2, $3)', [userID, req.body.uniqueStudentsIDs, req.body.uniqueGroupsIDs], function (err, result) {
             done();
             if (err) {
                 console.log(err);
