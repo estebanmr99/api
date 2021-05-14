@@ -26,7 +26,7 @@ router.put('/update/:uniqueStudentID', loginRequired, updateStudent);
 router.post('/getall', loginRequired, getStudentsInfo);
 
 // Get profile information from student
-router.get('/profile/:uniqueStudentID', loginRequired, getStudentProfile);
+router.post('/profile/:uniqueStudentID', loginRequired, getStudentProfile);
 
 // Add a single or multiple students to a group
 router.put('/addtogroup', loginRequired, addStudentToGroup);
