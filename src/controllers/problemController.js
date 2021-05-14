@@ -200,12 +200,12 @@ export const syncProblems = async (req, res) => {
             }
             console.log(studentsJudgeUVA);
 
-            // const [codeForcesResult, codeChefResult, uvaResult] = await Promise.all([codeForcesAPICall(userID, studentsJudgeCodeForces),
-            // codeChefAPICall(userID, studentsJudgeCodeChef),
-            // uvaAPICall(userID, studentsJudgeUVA)]);
-
-            const [uvaResult] = await Promise.all([
+            const [codeForcesResult, codeChefResult, uvaResult] = await Promise.all([codeForcesAPICall(userID, studentsJudgeCodeForces),
+            codeChefAPICall(userID, studentsJudgeCodeChef),
             uvaAPICall(userID, studentsJudgeUVA)]);
+
+            //const [uvaResult] = await Promise.all([
+            //uvaAPICall(userID, studentsJudgeUVA)]);
             
 
             // Return the result from the DB with OK (200) status
@@ -233,7 +233,7 @@ async function codeForcesAPICall(userID, studentsJudgeCodeForces) {
             };
 
             try {
-                const response = await axios.get(url, options).catch(next(err));
+                const response = await axios.get(url, options);
                 var studentProblems = response.data["result"].filter(item => item.verdict == "OK");
                 var problems = "";
                 for (let j = 0; j < studentProblems.length; j++) {
