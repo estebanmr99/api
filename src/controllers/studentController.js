@@ -209,21 +209,22 @@ export const getStudentProfile = (req, res) => {
             // Execution of a queries directly into the DB with parameters
             const studentInfoResult = await client.query('SELECT * from prc_get_student_info($1, $2)',[userID, req.params.uniqueStudentID])
             const studentJudgesResult = await client.query('SELECT * from prc_get_student_usernames($1, $2)',[userID, req.params.uniqueStudentID])
-            const studentProblemsResult = await client.query('SELECT * from prc_get_student_problem($1, $2)',[userID, req.params.uniqueStudentID])
+            const studentProblemsResult = await client.query('SELECT * from prc_get_student_problem($1, $2, $3)',[userID, req.params.uniqueStudentID,req.body.uniqueTagIDs])
 
             var studentInfo = studentInfoResult.rows[0];
             var studentJudges = flattenObject(studentJudgesResult.rows);
             var studentProblems = studentProblemsResult.rows;
 
             studentInfo["Judges"] = studentJudges;
-            
             var studentProblemsFlattern = [];
             for (let i = 0; i < studentProblems.length; i++) {
-                studentProblemsFlattern.push(flattenObject(studentProblems[i]));
+                studentProblemsFlattern.push(flattenObjectExceptArr(studentProblems[i]));
+        
+
             }
-
+  
+   
             studentInfo["Problems"] = studentProblemsFlattern;
-
             // Return the result from the DB with OK (200) status
             res.status(200).send(studentInfo);
         } catch (err) {
@@ -418,3 +419,8 @@ const flattenObject = (obj) => {
   
     return flattened
 }
+
+function renameKey ( obj, oldKey, newKey ) {
+    obj[newKey] = obj[oldKey];
+    delete obj[oldKey];
+  }
