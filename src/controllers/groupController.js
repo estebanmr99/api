@@ -108,6 +108,7 @@ export const updateGroup = (req, res) => {
 //                            the unique tag ids
 
 export const getGroupsInfo = (req, res) => {
+    req.setTimeout(1000);
     var userID = req.user._id;
     // Preparing the pool connection to the DB
     pool.connect(async function (err, client, done) {

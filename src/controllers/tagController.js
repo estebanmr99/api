@@ -133,6 +133,7 @@ export const getTagsInfo = (req, res) => {
 // Function to get all the tag name used by the filter based on the user id
 
 export const getTagsNames = (req, res) => {
+    req.setTimeout(1000);
     var userID = req.user._id;
     // Execution of a query directly into the DB with parameters
     pool.connect(function (err, client, done) {
