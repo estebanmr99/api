@@ -172,50 +172,58 @@ function sleep(ms) {
 
 export const syncProblems = async (req, res) => {
     var userID = req.user._id;
+
     // Preparing the pool connection to the DB
-    pool.connect(async function (err, client, done) {
-        if (err) {
-            console.log("Not able to stablish connection: " + err);
-            // Return the error with BAD REQUEST(400) status
-            res.status(400).send(err);
-        }
-        try {
-            // Execution of a queries directly into the DB with parameters
-            const studentsJudgeCodeForcesResult = await client.query('SELECT * from prc_get_students_judge($1, $2)', [userID, "CodeForces"]);
-            const studentsJudgeCodeChefResult = await client.query('SELECT * from prc_get_students_judge($1, $2)', [userID, "CodeChef"]);
-            const studentsJudgeUVAResult = await client.query('SELECT * from prc_get_students_judge($1, $2)', [userID, "UVA"]);
-            var studentsJudgeCodeForces = [];
-            var studentsJudgeCodeChef = [];
-            var studentsJudgeUVA = [];
-
-            if (studentsJudgeUVAResult.rows.length == studentsJudgeCodeChefResult.rows.length && studentsJudgeCodeChefResult.rows.length == studentsJudgeCodeForcesResult.rows.length){
-                for (let i = 0; i < studentsJudgeUVAResult.rows.length; i++) {
-                    studentsJudgeUVA.push(flattenObject(studentsJudgeUVAResult.rows[i]));
-                    studentsJudgeCodeChef.push(flattenObject(studentsJudgeCodeChefResult.rows[i]));
-                    studentsJudgeCodeForces.push(flattenObject(studentsJudgeCodeForcesResult.rows[i]));
-                }
-            } else {
-                throw err;
+    const client =  await pool.connect();
+    try{
+        // Execution of a queries directly into the DB with parameters
+        const studentsJudgeCodeForcesResult = await client.query('SELECT * from prc_get_students_judge($1, $2)', [userID, "CodeForces"]).catch(err => {
+            if (err) {
+                console.log("Not able to stablish connection: " + err);
+                // Return the error with BAD REQUEST (400) status
+                res.status(400).send(err);
             }
-     
+        });
+        const studentsJudgeCodeChefResult = await client.query('SELECT * from prc_get_students_judge($1, $2)', [userID, "CodeChef"]).catch(err => {
+            if (err) {
+                console.log("Not able to stablish connection: " + err);
+                // Return the error with BAD REQUEST (400) status
+                res.status(400).send(err);
+            }
+        });
+        const studentsJudgeUVAResult = await client.query('SELECT * from prc_get_students_judge($1, $2)', [userID, "UVA"]).catch(err => {
+            if (err) {
+                console.log("Not able to stablish connection: " + err);
+                // Return the error with BAD REQUEST (400) status
+                res.status(400).send(err);
+            }
+        });
 
-            const [codeForcesResult, codeChefResult, uvaResult] = await Promise.all([codeForcesAPICall(userID, studentsJudgeCodeForces),
-            codeChefAPICall(userID, studentsJudgeCodeChef),
-            uvaAPICall(userID, studentsJudgeUVA)]);
+        var studentsJudgeCodeForces = [];
+        var studentsJudgeCodeChef = [];
+        var studentsJudgeUVA = [];
 
-            //const [uvaResult] = await Promise.all([
-            //uvaAPICall(userID, studentsJudgeUVA)]);
-            
-
-            // Return the result from the DB with OK (200) status
-            res.status(200).send();
-
-        } catch (err) {
-            console.log(err.stack);
-            // Return the error with BAD REQUEST (400) status
-            res.status(400).send(err);
+        if (studentsJudgeUVAResult.rows.length == studentsJudgeCodeChefResult.rows.length && studentsJudgeCodeChefResult.rows.length == studentsJudgeCodeForcesResult.rows.length){
+            for (let i = 0; i < studentsJudgeUVAResult.rows.length; i++) {
+                studentsJudgeUVA.push(flattenObject(studentsJudgeUVAResult.rows[i]));
+                studentsJudgeCodeChef.push(flattenObject(studentsJudgeCodeChefResult.rows[i]));
+                studentsJudgeCodeForces.push(flattenObject(studentsJudgeCodeForcesResult.rows[i]));
+            }
+        } else {
+            throw err;
         }
-    });
+    
+        const [codeForcesResult, codeChefResult, uvaResult] = await Promise.all([codeForcesAPICall(userID, studentsJudgeCodeForces),
+        codeChefAPICall(userID, studentsJudgeCodeChef),
+        uvaAPICall(userID, studentsJudgeUVA)]);
+
+        // Return the result from the DB with OK (200) status
+        client.end();
+        res.status(200).send();
+
+    } finally{
+        client.release()
+    }
 }
 
 
@@ -253,9 +261,8 @@ async function codeForcesAPICall(userID, studentsJudgeCodeForces) {
                         });
                     }
                 });
-                console.log(i);
-            } catch (err) {
 
+            } catch (err) {
                 console.log(err);
                 // Preparing the pool connection to the DB
                 pool.connect(function (err, client, done) {
@@ -335,8 +342,9 @@ async function codeChefAPICall(userID, studentsJudgeCodeChef) {
                             });
                         }
                     });
-                    console.log(i);
+
                 } catch (err) {
+                    console.log(err);
                     // Preparing the pool connection to the DB
                     pool.connect(function (err, client, done) {
                         if (err) {
@@ -400,8 +408,9 @@ async function uvaAPICall(userID, studentsJudgeUVA) {
                         });
                     }
                 });
-                console.log(i);
+
             } catch (err) {
+                console.log(err);
                 // Preparing the pool connection to the DB
                 pool.connect(function (err, client, done) {
                     if (err) {

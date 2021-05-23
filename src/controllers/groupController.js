@@ -107,43 +107,50 @@ export const updateGroup = (req, res) => {
 // Will recieve in the body:
 //                            the unique tag ids
 
-export const getGroupsInfo = (req, res) => {
+export const getGroupsInfo = async (req, res) => {
     req.setTimeout(1000);
     var userID = req.user._id;
+
     // Preparing the pool connection to the DB
-    pool.connect(async function (err, client, done) {
-        if (err) {
-            console.log("Not able to stablish connection: " + err);
-            // Return the error with BAD REQUEST (400) status
-            res.status(400).send(err);
-        }
-        try {
-            // Execution of a queries directly into the DB with parameters
-            const groupsInfoResult = await client.query('SELECT * from prc_get_groups($1, $2)', [userID, req.body.tags]);
-            const groupsStudentsResult = await client.query('SELECT * from prc_get_groups_students($1, $2)', [userID, req.body.tags]);
-            
-            console.log(groupsStudentsResult.rows);
-            var groupsInfo = groupsInfoResult.rows;
-            var groupsStudents = groupsStudentsResult.rows;
-
-            var groupsStudentsFlatten = [];
-            for (let i = 0; i < groupsStudents.length; i++){
-                groupsStudentsFlatten.push(flattenObject(groupsStudents[i]));
+    const client =  await pool.connect();
+    
+    try{
+        // Execution of a queries directly into the DB with parameters
+        const groupsInfoResult = await client.query('SELECT * from prc_get_groups($1, $2)', [userID, req.body.tags]).catch(err => {
+            if (err) {
+                console.log("Not able to stablish connection: " + err);
+                // Return the error with BAD REQUEST (400) status
+                res.status(400).send(err);
             }
-
-            for(var i = 0; i < groupsInfo.length; i++) {
-                groupsInfo[i]["isExpanded"] = false;
-                groupsInfo[i]["students"] = groupsStudentsFlatten.filter(item => item.groupid == groupsInfo[i]["id"]);
+          });
+        const groupsStudentsResult = await client.query('SELECT * from prc_get_groups_students($1, $2)', [userID, req.body.tags]).catch(err => {
+            if (err) {
+                console.log("Not able to stablish connection: " + err);
+                // Return the error with BAD REQUEST (400) status
+                res.status(400).send(err);
             }
+        });
 
-            // Return the result from the DB with OK (200) status
-            res.status(200).send(groupsInfo);
-        } catch (err) {
-            console.log(err.stack);
-            // Return the error with BAD REQUEST (400) status
-            res.status(400).send(err);
+        var groupsInfo = groupsInfoResult.rows;
+        var groupsStudents = groupsStudentsResult.rows;
+
+        var groupsStudentsFlatten = [];
+        for (let i = 0; i < groupsStudents.length; i++){
+            groupsStudentsFlatten.push(flattenObject(groupsStudents[i]));
         }
-    });
+
+        for(var i = 0; i < groupsInfo.length; i++) {
+            groupsInfo[i]["isExpanded"] = false;
+            groupsInfo[i]["students"] = groupsStudentsFlatten.filter(item => item.groupid == groupsInfo[i]["id"]);
+        }
+
+        // Return the result from the DB with OK (200) status
+        client.end();
+        res.status(200).send(groupsInfo);
+
+    } finally{
+        client.release()
+    }
 }
 
 

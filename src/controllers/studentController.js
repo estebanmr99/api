@@ -25,7 +25,7 @@ var pool = new pg.Pool(config);
 
 export const addStudent = async (req, res) => {
     var userID = req.user._id;
-    console.log(userID)
+
     var studentUsernames = req.body.judges.split(";");
     var studentJudgeIds = "";
     for (let i = 0; i < studentUsernames.length; i++) {
@@ -140,56 +140,64 @@ export const updateStudent = async (req, res) => {
 // Will recieve in the body:
 //                            the group unique id (if it's necessary to filter)
 
-export const getStudentsInfo = (req, res) => {
+export const getStudentsInfo = async (req, res) => {
     req.setTimeout(1000);
     var userID = req.user._id;
+
     // Preparing the pool connection to the DB
-    pool.connect(async function (err, client, done) {
-        if (err) {
-            console.log("Not able to stablish connection: " + err);
-            // Return the error with BAD REQUEST (400) status
-            res.status(400).send(err);
+    const client =  await pool.connect();
+
+    try{    
+        // Execution of a queries directly into the DB with parameters
+        const studentsResult = await client.query('SELECT * from prc_get_students($1, $2)',[userID, req.body.uniqueGroupID]).catch(err => {
+            if (err) {
+                console.log("Not able to stablish connection: " + err);
+                // Return the error with BAD REQUEST (400) status
+                res.status(400).send(err);
+            }
+        });
+
+        var students = [];
+        var uniqueStudentsIDs = "";
+
+        for (let i = 0; i < studentsResult.rows.length; i++) {
+            students.push(flattenObjectExceptArr(studentsResult.rows[i]));
+            uniqueStudentsIDs += students[i]["id"] + ";";
         }
-        try {
-            // Execution of a queries directly into the DB with parameters
-            const studentsResult = await client.query('SELECT * from prc_get_students($1, $2)',[userID, req.body.uniqueGroupID]);
-            var students = [];
-            var uniqueStudentsIDs = "";
+        uniqueStudentsIDs = uniqueStudentsIDs.slice(0, -1);
 
-            for (let i = 0; i < studentsResult.rows.length; i++) {
-                students.push(flattenObjectExceptArr(studentsResult.rows[i]));
-                uniqueStudentsIDs += students[i]["id"] + ";";
+        const studentsUsernamesResult = await client.query('SELECT * from prc_get_students_usernames($1, $2)',[userID, uniqueStudentsIDs]).catch(err => {
+            if (err) {
+                console.log("Not able to stablish connection: " + err);
+                // Return the error with BAD REQUEST (400) status
+                res.status(400).send(err);
             }
-            uniqueStudentsIDs = uniqueStudentsIDs.slice(0, -1);
+        });
 
-            const studentsUsernamesResult = await client.query('SELECT * from prc_get_students_usernames($1, $2)',[userID, uniqueStudentsIDs]);
+        var studentsUsernames = [];
 
-            var studentsUsernames = [];
+        for (let i = 0; i < studentsUsernamesResult.rows.length; i++) {
+            studentsUsernames.push(flattenObject(studentsUsernamesResult.rows[i]));
+        }
+    
 
-            for (let i = 0; i < studentsUsernamesResult.rows.length; i++) {
-                studentsUsernames.push(flattenObject(studentsUsernamesResult.rows[i]));
-            }
-          
-     
-            for(var i = 0; i < students.length; i++) {
-                var usernames = studentsUsernames.filter(item => item.id == students[i]["id"]);
-                
-                for (var key in usernames[0]){
-                    students[i][key] = usernames[0][key];
-                   
-                   
-                }
-            }
+        for(var i = 0; i < students.length; i++) {
+            var usernames = studentsUsernames.filter(item => item.id == students[i]["id"]);
             
-
-            // Return the result from the DB with OK (200) status
-            res.status(200).send(students);
-        } catch (err) {
-            console.log(err.stack);
-            // Return the error with BAD REQUEST (400) status
-            res.status(400).send(err);
+            for (var key in usernames[0]){
+                students[i][key] = usernames[0][key];
+                
+                
+            }
         }
-    });
+        
+        // Return the result from the DB with OK (200) status
+        client.end();
+        res.status(200).send(students);
+
+    } finally{
+        client.release()
+    }
 }
 
 
@@ -197,43 +205,57 @@ export const getStudentsInfo = (req, res) => {
 // Will recieve in the body:
 //                            the unique student id
 
-export const getStudentProfile = (req, res) => {
+export const getStudentProfile = async (req, res) => {
+
+    req.setTimeout(1000);
     var userID = req.user._id;
+
     // Preparing the pool connection to the DB
-    pool.connect(async function (err, client, done) {
-        if (err) {
-            console.log("Not able to stablish connection: " + err);
-            // Return the error with BAD REQUEST (400) status
-            res.status(400).send(err);
-        }
-        try {
-            // Execution of a queries directly into the DB with parameters
-            const studentInfoResult = await client.query('SELECT * from prc_get_student_info($1, $2)',[userID, req.params.uniqueStudentID])
-            const studentJudgesResult = await client.query('SELECT * from prc_get_student_usernames($1, $2)',[userID, req.params.uniqueStudentID])
-            const studentProblemsResult = await client.query('SELECT * from prc_get_student_problem($1, $2, $3)',[userID, req.params.uniqueStudentID,req.body.uniqueTagIDs])
+    const client =  await pool.connect();
 
-            var studentInfo = studentInfoResult.rows[0];
-            var studentJudges = flattenObject(studentJudgesResult.rows);
-            var studentProblems = studentProblemsResult.rows;
-
-            studentInfo["Judges"] = studentJudges;
-            var studentProblemsFlattern = [];
-            for (let i = 0; i < studentProblems.length; i++) {
-                studentProblemsFlattern.push(flattenObjectExceptArr(studentProblems[i]));
-        
-
+    try{
+        // Execution of a queries directly into the DB with parameters
+        const studentInfoResult = await client.query('SELECT * from prc_get_student_info($1, $2)',[userID, req.params.uniqueStudentID]).catch(err => {
+            if (err) {
+                console.log("Not able to stablish connection: " + err);
+                // Return the error with BAD REQUEST (400) status
+                res.status(400).send(err);
             }
-  
-   
-            studentInfo["Problems"] = studentProblemsFlattern;
-            // Return the result from the DB with OK (200) status
-            res.status(200).send(studentInfo);
-        } catch (err) {
-            console.log(err.stack);
-            // Return the error with BAD REQUEST (400) status
-            res.status(400).send(err);
+        });
+        const studentJudgesResult = await client.query('SELECT * from prc_get_student_usernames($1, $2)',[userID, req.params.uniqueStudentID]).catch(err => {
+            if (err) {
+                console.log("Not able to stablish connection: " + err);
+                // Return the error with BAD REQUEST (400) status
+                res.status(400).send(err);
+            }
+        });
+        const studentProblemsResult = await client.query('SELECT * from prc_get_student_problem($1, $2, $3)',[userID, req.params.uniqueStudentID,req.body.uniqueTagIDs]).catch(err => {
+            if (err) {
+                console.log("Not able to stablish connection: " + err);
+                // Return the error with BAD REQUEST (400) status
+                res.status(400).send(err);
+            }
+        });
+
+        var studentInfo = studentInfoResult.rows[0];
+        var studentJudges = flattenObject(studentJudgesResult.rows);
+        var studentProblems = studentProblemsResult.rows;
+
+        studentInfo["Judges"] = studentJudges;
+        var studentProblemsFlattern = [];
+        for (let i = 0; i < studentProblems.length; i++) {
+            studentProblemsFlattern.push(flattenObjectExceptArr(studentProblems[i]));
         }
-    });
+
+        studentInfo["Problems"] = studentProblemsFlattern;
+
+        // Return the result from the DB with OK (200) status
+        client.end();
+        res.status(200).send(studentInfo);
+
+    } finally{
+        client.release()
+    }
 }
 
 
@@ -282,8 +304,6 @@ export const removeStudentfromGroup = (req, res) => {
             res.status(400).send(err);
         }
         // Execution of a query directly into the DB with parameters
-        console.log("Parametros de remove")
-        console.log([userID, req.body.uniqueStudentsIDs, req.body.uniqueGroupsIDs])
         client.query('SELECT * from prc_delete_students_from_groups($1, $2, $3)', [userID, req.body.uniqueStudentsIDs, req.body.uniqueGroupsIDs], function (err, result) {
             done();
             if (err) {
