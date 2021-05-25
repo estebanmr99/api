@@ -55,7 +55,6 @@ export const addStudent = async (req, res) => {
             var student;
             for (var i = 0; i < result.rows.length; i++) {
                 student = result.rows[i];
-                console.log( result.rows[i]);
             }
             // Return the result from the DB with OK (200) status
             res.status(200).send(student);
