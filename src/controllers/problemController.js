@@ -217,6 +217,7 @@ export const syncProblems = async (req, res) => {
         codeChefAPICall(userID, studentsJudgeCodeChef),
         uvaAPICall(userID, studentsJudgeUVA)]);
 
+        console.log("The API calls were completed");
         // Return the result from the DB with OK (200) status
         client.end();
         res.status(200).send();
@@ -264,16 +265,17 @@ async function codeForcesAPICall(userID, studentsJudgeCodeForces) {
 
             } catch (err) {
                 console.log(err);
+                let error = "There was an error during the API query: " + err;
                 // Preparing the pool connection to the DB
                 pool.connect(function (err, client, done) {
                     if (err) {
                         console.log("Not able to stablish connection: " + err);
                     } else {
                         // Execution of a query directly into the DB with parameters
-                        client.query('SELECT * from prc_add_student_log($1, $2, $3)', [userID, studentsJudgeCodeForces[i]["studentUsername"], judgeName], function (err, result) {
+                        client.query('SELECT * from prc_add_student_log($1, $2, $3, $4)', [userID, studentsJudgeCodeForces[i]["studentId"], studentsJudgeCodeForces[i]["studentUsername"], error], function (err, result) {
                             done();
-                            //if (err)
-                              //  console.log(err);
+                            if (err)
+                               console.log(err);
                         });
                     }
                 });
@@ -345,13 +347,14 @@ async function codeChefAPICall(userID, studentsJudgeCodeChef) {
 
                 } catch (err) {
                     console.log(err);
+                    let error = "There was an error during the API query: " + err;
                     // Preparing the pool connection to the DB
                     pool.connect(function (err, client, done) {
                         if (err) {
                             console.log("Not able to stablish connection: " + err);
                         } else {
                             // Execution of a query directly into the DB with parameters
-                            client.query('SELECT * from prc_add_student_log($1, $2, $3)', [userID, studentsJudgeCodeChef[i]["studentUsername"], judgeName], function (err, result) {
+                            client.query('SELECT * from prc_add_student_log($1, $2, $3, $4)', [userID, studentsJudgeCodeChef[i]["studentId"], studentsJudgeCodeChef[i]["studentUsername"], error], function (err, result) {
                                 done();
                                 if (err)
                                     console.log(err);
@@ -411,13 +414,14 @@ async function uvaAPICall(userID, studentsJudgeUVA) {
 
             } catch (err) {
                 console.log(err);
+                let error = "There was an error during the API query: " + err;
                 // Preparing the pool connection to the DB
                 pool.connect(function (err, client, done) {
                     if (err) {
                         console.log("Not able to stablish connection: " + err);
                     } else {
                         // Execution of a query directly into the DB with parameters
-                        client.query('SELECT * from prc_add_student_log($1, $2, $3)', [userID, response.data["uname"], judgeName], function (err, result) {
+                        client.query('SELECT * from prc_add_student_log($1, $2, $3, $4)', [userID, studentsJudgeUVA[i]["studentId"], response.data["uname"], error], function (err, result) {
                             done();
                             if (err)
                                 console.log(err);
